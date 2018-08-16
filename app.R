@@ -2,12 +2,13 @@
 suppressMessages(require(shiny))
 suppressMessages(require(shinydashboard))
 suppressMessages(require(shinydashboardPlus))
+suppressMessages(library(shinycssloaders))
 suppressMessages(require(shinyWidgets))
 suppressMessages(require(shinyjs))
 suppressMessages(require(tidyverse))
 suppressMessages(require(highcharter))
 suppressMessages(require(reshape2))
-suppressMessages(library(shinycssloaders))
+
 # FUNCTIONS -------------------------------------------------------------------------------------------------------
 source("function/function.R",encoding = "UTF-8")
 boxnew <- function(inputId,boxtitle,menu_selected,label,choices,selected,status,width_box,plot_highchart){
@@ -77,12 +78,11 @@ boxnew <- function(inputId,boxtitle,menu_selected,label,choices,selected,status,
           width = 11,
           h4(boxtitle)),
         column(
-          width = 1,
+          width = 1,align = 'right',
           shinyWidgets::dropdownButton(
             size = "sm",
             circle = FALSE, 
-            status = status, 
-            icon = icon("filter"), 
+            status = status,  
             width = "200px",
             right = TRUE,
             tooltip = tooltipOptions(title = "Filtro"),
@@ -101,6 +101,9 @@ boxnew <- function(inputId,boxtitle,menu_selected,label,choices,selected,status,
   }
 # SHINY DATABASE --------------------------------------------------------------------------------------------------
 des_evo <- readRDS("data/despesa_evolucao.rds")
+year <- unique(substr(des_evo[order(des_evo$LANCAMENTO,decreasing = T),]$LANCAMENTO,1,4))
+department <- c("IFB",unique(des_evo[order(des_evo$SG_UG),]$SG_UG))
+grupo_despesa <- unique(des_evo$CO_GD)
 load("data/tb_acao.rda")
 hcoptslang <- getOption("highcharter.lang")
 hcoptslang$decimalPoint <- ","
@@ -119,12 +122,12 @@ options(highcharter.lang = hcoptslang)
 ui <-
   dashboardPagePlus(
     dashboardHeaderPlus(
-      title = "Painel de Gestão CCEI",
-      titleWidth = 240,
+      title = strong("Gestão CCEI"),
+      titleWidth = 200,
       enable_rightsidebar = TRUE,
       rightSidebarIcon = "gears"), 
     dashboardSidebar(
-      width = 240,
+      width = 200,
       collapsed = FALSE,
       sidebarMenu(
         menuItem(
@@ -144,7 +147,11 @@ ui <-
           menuSubItem(
             text = strong("Comparativo"),
             tabName = "comparativo",
-            icon = icon("angle-right")))
+            icon = icon("angle-right"))),
+        menuItem(
+          text = strong("PESSOAL"),
+          tabName = "pessoal",
+          icon = icon("group"))
         )
       ),
     dashboardBody(
@@ -157,28 +164,28 @@ ui <-
               width_box = 5,
               status = "warning",
               boxtitle = "Execução da Despesa - Ano",
-              menu_selected = c("typeplot", "groupplot", "dimension", "department"),
-              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D", department = "empty"),
-              choices = c(typeplot = "empty", groupplot = "empty", department = "empty"),
-              selected = c(typeplot = "empty", groupplot = "empty", dimension = "empty", department = "CCEI")),
+              menu_selected = c("typeplot", "groupplot", "dimension"),
+              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
+              choices = c(typeplot = "empty", groupplot = "empty"),
+              selected = c(typeplot = "empty", groupplot = "empty", dimension = "empty")),
             boxnew(
               inputId = "02",
               width_box = 7,
               status = "warning",
               boxtitle = "Execução da Despesa - Mês",
-              menu_selected = c("typeplot", "groupplot", "dimension", "year", "department"),
-              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D", year = "empty", department = "empty"),
-              choices = c(typeplot = "empty", groupplot = "empty", year = "empty", department = "empty"),
-              selected = c(typeplot = "areaspline", groupplot = "empty", dimension = "empty", year = "empty", department = "CCEI")),
+              menu_selected = c("typeplot", "groupplot", "dimension"),
+              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
+              choices = c(typeplot = "empty", groupplot = "empty"),
+              selected = c(typeplot = "areaspline", groupplot = "empty", dimension = "empty")),
             boxnew(
               inputId = "03",
               width_box = 12,
               status = "warning",
               boxtitle = "Execução da Despesa - Ano e Mês não acumulado (%)",
-              menu_selected = c("typeplot", "groupplot", "dimension", "year", "department"),
-              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D", year = "empty", department = "empty"),
-              choices = list(typeplot = "empty", groupplot = "empty", year = c("Todos", unique(substr(des_evo[order(des_evo$LANCAMENTO,decreasing = T),]$LANCAMENTO,1,4))), department = "empty"),
-              selected = c(typeplot = "spline", groupplot = "empty", dimension = "empty", year = "Todos", department = "CCEI"))
+              menu_selected = c("typeplot", "groupplot", "dimension"),
+              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
+              choices = list(typeplot = "empty", groupplot = "empty"),
+              selected = c(typeplot = "spline", groupplot = "empty", dimension = "empty"))
             )
           ),
         tabItem(
@@ -186,31 +193,31 @@ ui <-
           fluidRow(
             boxnew(
               inputId = "04",
-              width_box = 6,
+              width_box = 5,
               status = "warning",
               boxtitle = "Execução da Despesa - Grupo de Despesa",
-              menu_selected = c("typeplot", "groupplot", "dimension", "year", "department"),
-              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D", year = "empty", department = "empty"),
-              choices = c(typeplot = "empty", groupplot = "empty", year = "empty", department = "empty"),
-              selected = c(typeplot = "column", groupplot = "empty", dimension = "empty", year = "empty", department = "CCEI")),
+              menu_selected = c("typeplot", "groupplot", "dimension"),
+              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
+              choices = c(typeplot = "empty", groupplot = "empty"),
+              selected = c(typeplot = "column", groupplot = "empty", dimension = "empty")),
             boxnew(
               inputId = "05",
-              width_box = 6,
+              width_box = 7,
               status = "warning",
               boxtitle = "Execução da Despesa - Ação Orçamentária",
-              menu_selected = c("typeplot", "groupplot", "dimension", "year", "department"),
-              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D", year = "empty", department = "empty"),
-              choices = c(typeplot = "empty", groupplot = "empty", year = "empty", department = "empty"),
-              selected = c(typeplot = "column", groupplot = "empty", dimension = "empty", year = "empty", department = "CCEI")),
+              menu_selected = c("typeplot", "groupplot", "dimension"),
+              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
+              choices = c(typeplot = "empty", groupplot = "empty"),
+              selected = c(typeplot = "column", groupplot = "empty", dimension = "empty")),
             boxnew(
               inputId = "06",
               width_box = 12,
               status = "warning",
               boxtitle = "Execução da Despesa - Elemento de Despesa",
-              menu_selected = c("typeplot", "groupplot", "dimension", "year", "department"),
-              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D", year = "empty", department = "empty"),
-              choices = c(typeplot = "empty", groupplot = "empty", year = "empty", department = "empty"),
-              selected = c(typeplot = "column", groupplot = "empty", dimension = "empty", year = "empty", department = "CCEI"))
+              menu_selected = c("typeplot", "groupplot", "dimension"),
+              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
+              choices = c(typeplot = "empty", groupplot = "empty"),
+              selected = c(typeplot = "column", groupplot = "empty", dimension = "empty"))
             )
           ),
         tabItem(
@@ -221,19 +228,19 @@ ui <-
               width_box = 7,
               status = "warning",
               boxtitle = "Execução da Despesa - UG",
-              menu_selected = c("typeplot", "groupplot", "dimension", "year", "department"),
-              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D", year = "empty", department = "empty"),
-              choices = list(typeplot = "empty", groupplot = "empty", year = "empty", department = c("IFB","CAMPI")),
-              selected = c(typeplot = "column", groupplot = "normal", dimension = "empty", year = "empty", department = "CAMPI")),
+              menu_selected = c("typeplot", "groupplot", "dimension","department"),
+              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D", department = "Grupo de unidades"),
+              choices = list(typeplot = "empty", groupplot = "empty", department = c("Com Reitoria","Sem Reitoria")),
+              selected = c(typeplot = "column", groupplot = "normal", dimension = "empty", department = "Sem Reitoria")),
             boxnew(
               inputId = "08",
               width_box = 5,
               status = "warning",
               boxtitle = "Execução da Despesa - Campi e Reitoria",
-              menu_selected = c("typeplot", "groupplot", "dimension", "year"),
-              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D", year = "empty"),
-              choices = list(typeplot = "empty", groupplot = "empty", year = "empty"),
-              selected = c(typeplot = "column", groupplot = "normal", dimension = "empty", year = "empty"))
+              menu_selected = c("typeplot", "groupplot", "dimension"),
+              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
+              choices = list(typeplot = "empty", groupplot = "empty"),
+              selected = c(typeplot = "column", groupplot = "normal", dimension = "empty"))
           )
         )
         )
@@ -242,25 +249,16 @@ ui <-
       background = "dark",
       rightSidebarTabContent(
         id = 1,
-        title = "Tab 1",
-        icon = "desktop",
-        active = TRUE,
-        sliderInput(
-          "obs",
-          "Number of observations:",
-          min = 0, max = 1000, value = 500
-        )
-      ),
-      rightSidebarTabContent(
-        id = 2,
-        title = "Tab 2",
-        textInput("caption", "Caption", "Data Summary")
-      ),
-      rightSidebarTabContent(
-        id = 3,
-        icon = "paint-brush",
-        title = "Tab 3",
-        numericInput("obs", "Observations:", 10, min = 1, max = 100)
+        title = "Base de Dados",
+        selectInput(inputId = "unidade",label = "Unidade", choices = department,selected = "CCEI"),
+        selectInput(inputId = "exercicio",label = "Exercício", choices = year,selected = year[1]),
+        checkboxGroupInput(
+          inputId = "grupodespesa",
+          label = "Grupo de despesa",
+          choices = list("Despesa Corrente" = grupo_despesa[1], "Despesa de Capital" = grupo_despesa[2], "Pessoal" = grupo_despesa[3]),
+          selected = grupo_despesa[1:2]
+        ),
+        materialSwitch(inputId = "restoapagar",label = "Incluir restos a pagar?",value = FALSE,status = "primary")
       )
     ),title = "Painel CCEI"
   )
@@ -268,31 +266,35 @@ ui <-
 server <-
   function(input, output, session) {
     dbplot01 <- reactive({
-      if (input$department01 == "IFB"){
+      if (input$unidade == "IFB"){
         db <- des_evo %>%
-          filter(CO_GD %in% c("3", "4")) %>%
+          filter(CO_GD %in% c(input$grupodespesa)) %>%
           group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG = "IFB") %>%
-          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO"), .funs = sum)
-      }else{
-        ano <- unique(substr(des_evo[des_evo$SG_UG == input$department01, ]$LANCAMENTO, 1, 4))
-        if (input$department01 == "CCEI") ano <- ano[!ano == "2016"]
-        db <- des_evo %>%
-          filter(CO_GD %in% c("3", "4"), substr(LANCAMENTO, 1, 4) %in% ano, SG_UG == input$department01) %>%
-          group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG) %>%
-          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO"), .funs = sum)
-      }
+          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO","RAP_PAGO","RAP_CANCELADO"), .funs = sum)
+        }else{
+          ano <- unique(substr(des_evo[des_evo$SG_UG == input$unidade, ]$LANCAMENTO, 1, 4))
+          if (input$unidade == "CCEI") ano <- ano[!ano == "2016"]
+          db <- des_evo %>%
+            filter(CO_GD %in% c(input$grupodespesa), substr(LANCAMENTO, 1, 4) %in% ano, SG_UG == input$unidade) %>%
+            group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG) %>%
+            summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO","RAP_PAGO","RAP_CANCELADO"), .funs = sum)
+        }
       db
-    })
+      })
     output$plot01 <- renderHighchart({
       hc <- highchart() %>%
         hc_title(text = "") %>%
         hc_subtitle(text = unique(dbplot01()$SG_UG)) %>%
         hc_yAxis(title = list(text = "")) %>%
-        hc_xAxis(title = list(text = ""), categories = dbplot01()$ANO) %>%
+        hc_xAxis(title = list(text = ""), categories = dbplot01()$ANO) %>% 
         hc_add_series(name = "EMPENHADO", data = dbplot01()$EMPENHADO) %>%
         hc_add_series(name = "LIQUIDADO", data = dbplot01()$LIQUIDADO) %>%
-        hc_add_series(name = "PAGO", data = dbplot01()$PAGO) %>%
-        hc_exporting(enabled = TRUE) %>%
+        hc_add_series(name = "PAGO", data = dbplot01()$PAGO)
+        if(input$restoapagar == TRUE){
+          hc <- hc %>% hc_add_series(name = "RAP PAGO", data = dbplot01()$RAP_PAGO) %>% 
+          hc_add_series(name = "RAP CANCELADO", data = dbplot01()$RAP_CANCELADO)
+        }
+      hc <- hc %>% hc_exporting(enabled = TRUE) %>%
         hc_chart(
           type = input$typeplot01,
           options3d = list(
@@ -308,29 +310,27 @@ server <-
       hc
     })
     dbplot02 <- reactive({
-      if (input$department02 == "IFB") {
+      if (input$unidade == "IFB") {
         db <- des_evo %>%
-          filter(CO_GD %in% c("3", "4"), substr(LANCAMENTO, 1, 4) == input$year02) %>%
+          filter(CO_GD %in% c(input$grupodespesa), substr(LANCAMENTO, 1, 4) == input$exercicio) %>%
           group_by(LANCAMENTO, SG_UG = "IFB") %>%
-          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO"),
-                       .funs = sum)
+          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO","RAP_PAGO","RAP_CANCELADO"),.funs = sum)
         db$EMPENHADO <- cumsum(db$EMPENHADO)
         db$LIQUIDADO <- cumsum(db$LIQUIDADO)
         db$PAGO <- cumsum(db$PAGO)
-      } else{
+        db$RAP_PAGO <- cumsum(db$RAP_PAGO)
+        db$RAP_CANCELADO <- cumsum(db$RAP_CANCELADO)
+        } else{
         db <- des_evo %>%
-          filter(
-            CO_GD %in% c("3", "4"),
-            substr(LANCAMENTO, 1, 4) == input$year02,
-            SG_UG == input$department02
-          ) %>%
+          filter(CO_GD %in% input$grupodespesa, substr(LANCAMENTO, 1, 4) == input$exercicio, SG_UG == input$unidade) %>%
           group_by(LANCAMENTO, SG_UG) %>%
-          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO"),
-                       .funs = sum)
+          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO","RAP_PAGO","RAP_CANCELADO"),.funs = sum)
         db$EMPENHADO <- cumsum(db$EMPENHADO)
         db$LIQUIDADO <- cumsum(db$LIQUIDADO)
         db$PAGO <- cumsum(db$PAGO)
-      }
+        db$RAP_PAGO <- cumsum(db$RAP_PAGO)
+        db$RAP_CANCELADO <- cumsum(db$RAP_CANCELADO)
+        }
       db
     })
     output$plot02 <- renderHighchart({
@@ -342,8 +342,12 @@ server <-
         hc_xAxis(categories = dbplot02()$LANCAMENTO) %>%
         hc_add_series(name = "EMPENHADO", data = dbplot02()$EMPENHADO) %>%
         hc_add_series(name = "LIQUIDADO", data = dbplot02()$LIQUIDADO) %>%
-        hc_add_series(name = "PAGO", data = dbplot02()$PAGO) %>%
-        hc_exporting(enabled = TRUE) %>%
+        hc_add_series(name = "PAGO", data = dbplot02()$PAGO)
+      if(input$restoapagar == TRUE){
+        hc <- hc %>% hc_add_series(name = "RAP PAGO", data = dbplot02()$RAP_PAGO) %>% 
+          hc_add_series(name = "RAP CANCELADO", data = dbplot02()$RAP_CANCELADO)
+      }
+        hc <- hc %>% hc_exporting(enabled = TRUE) %>%
         hc_chart(
           type = input$typeplot02,
           options3d = list(
@@ -359,28 +363,16 @@ server <-
       hc
     })
     dbplot03 <- reactive({
-      if(input$year03 == "Todos") {
-        ano <- unique(substr(des_evo$LANCAMENTO, 1, 4))
-        if (input$department03 == "CCEI") {
-          ano <- ano[!ano == "2016"]
-        }
-      } else{
-        ano = input$year03
-      }
-      if (input$department03 == "IFB") {
+      if (input$unidade == "IFB") {
         db <- des_evo %>%
-          filter(CO_GD %in% c("3", "4"), substr(LANCAMENTO, 1, 4) %in% ano) %>%
+          filter(CO_GD %in% input$grupodespesa, substr(LANCAMENTO, 1, 4) == input$exercicio) %>%
           group_by(LANCAMENTO, SG_UG = "IFB") %>%
-          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO"),
-                       .funs = sum)
-      } else{
+          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO","RAP_PAGO","RAP_CANCELADO"),.funs = sum)
+        } else{
         db <- des_evo %>%
-          filter(CO_GD %in% c("3", "4"),
-                 substr(LANCAMENTO, 1, 4) %in% ano,
-                 SG_UG == input$department03) %>%
+          filter(CO_GD %in% input$grupodespesa,substr(LANCAMENTO, 1, 4) == input$exercicio,SG_UG == input$unidade) %>%
           group_by(LANCAMENTO, SG_UG) %>%
-          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO"),
-                       .funs = sum)
+          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO","RAP_PAGO","RAP_CANCELADO"),.funs = sum)
       }
       db
     })
@@ -393,8 +385,12 @@ server <-
         hc_xAxis(categories = dbplot03()$LANCAMENTO) %>%
         hc_add_series(name = "EMPENHADO", data = dbplot03()$EMPENHADO) %>%
         hc_add_series(name = "LIQUIDADO", data = dbplot03()$LIQUIDADO) %>%
-        hc_add_series(name = "PAGO", data = dbplot03()$PAGO) %>%
-        hc_exporting(enabled = TRUE) %>%
+        hc_add_series(name = "PAGO", data = dbplot03()$PAGO)
+      if(input$restoapagar == TRUE){
+        hc <- hc %>% hc_add_series(name = "RAP PAGO", data = dbplot03()$RAP_PAGO) %>% 
+          hc_add_series(name = "RAP CANCELADO", data = dbplot03()$RAP_CANCELADO)
+      }
+      hc <- hc %>% hc_exporting(enabled = TRUE) %>%
         hc_chart(
           type = input$typeplot03,
           options3d = list(
@@ -413,25 +409,16 @@ server <-
     
 # Por Grupo de Despesa ---------------------------------------------------
     dbplot04 <- reactive({
-      if (input$department04 == "IFB") {
+      if (input$unidade == "IFB") {
         db <- des_evo %>%
-          filter(CO_GD %in% c("3", "4"), substr(LANCAMENTO, 1, 4) == input$year04) %>%
-          group_by(ANO = substr(LANCAMENTO, 1, 4),
-                   CO_GD,
-                   SG_UG = "IFB",
-                   NO_GD) %>%
-          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO"),
-                       .funs = sum)
+          filter(CO_GD %in% input$grupodespesa, substr(LANCAMENTO, 1, 4) == input$exercicio) %>%
+          group_by(ANO = substr(LANCAMENTO, 1, 4),CO_GD,SG_UG = "IFB",NO_GD) %>%
+          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO","RAP_PAGO","RAP_CANCELADO"),.funs = sum)
       } else{
         db <- des_evo %>%
-          filter(
-            CO_GD %in% c("3", "4"),
-            substr(LANCAMENTO, 1, 4) == input$year04,
-            SG_UG == input$department04
-          ) %>%
+          filter(CO_GD %in% input$grupodespesa,substr(LANCAMENTO, 1, 4) == input$exercicio,SG_UG == input$unidade) %>%
           group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG, CO_GD, NO_GD) %>%
-          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO"),
-                       .funs = sum)
+          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO","RAP_PAGO","RAP_CANCELADO"),.funs = sum)
       }
       db
     })
@@ -444,8 +431,12 @@ server <-
         hc_xAxis(categories = dbplot04()$NO_GD) %>%
         hc_add_series(name = "EMPENHADO", data = dbplot04()$EMPENHADO) %>%
         hc_add_series(name = "LIQUIDADO", data = dbplot04()$LIQUIDADO) %>%
-        hc_add_series(name = "PAGO", data = dbplot04()$PAGO) %>%
-        hc_exporting(enabled = TRUE) %>%
+        hc_add_series(name = "PAGO", data = dbplot04()$PAGO)
+      if(input$restoapagar == TRUE){
+        hc <- hc %>% hc_add_series(name = "RAP PAGO", data = dbplot04()$RAP_PAGO) %>% 
+          hc_add_series(name = "RAP CANCELADO", data = dbplot04()$RAP_CANCELADO)
+      }
+      hc <- hc %>% hc_exporting(enabled = TRUE) %>%
         hc_chart(
           type = input$typeplot04,
           options3d = list(
@@ -464,25 +455,17 @@ server <-
 # Por Ação Orçamentária ---------------------------------------------------
     dbplot05 <- reactive({
       db <- des_evo %>% left_join(tb_acao, by = "CO_ACAO")
-      if (input$department03 == "IFB") {
+      if (input$unidade == "IFB") {
         db <- db %>%
-          filter(CO_GD %in% c("3", "4"), substr(LANCAMENTO, 1, 4) == input$year05) %>%
-          group_by(ANO = substr(LANCAMENTO, 1, 4),
-                   CO_GD,
-                   SG_UG = "IFB",
-                   NO_ACAO_RESUMO) %>%
-          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO"),
-                       .funs = sum)
+          filter(CO_GD %in% input$grupodespesa, substr(LANCAMENTO, 1, 4) == input$exercicio) %>%
+          group_by(ANO = substr(LANCAMENTO, 1, 4),CO_GD,SG_UG = "IFB",NO_ACAO_RESUMO) %>%
+          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO", "RAP_PAGO", "RAP_CANCELADO"), .funs = sum)
       } else{
         db <- db %>%
-          filter(
-            CO_GD %in% c("3", "4"),
-            substr(LANCAMENTO, 1, 4) == input$year05,
-            SG_UG == input$department05
+          filter(CO_GD %in% input$grupodespesa, substr(LANCAMENTO, 1, 4) == input$exercicio, SG_UG == input$unidade
           ) %>%
           group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG, CO_ACAO, NO_ACAO_RESUMO) %>%
-          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO"),
-                       .funs = sum)
+          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO", "RAP_PAGO", "RAP_CANCELADO"), .funs = sum)
       }
       db
     })
@@ -495,7 +478,12 @@ server <-
         hc_xAxis(categories = dbplot05()$NO_ACAO_RESUMO) %>%
         hc_add_series(name = "EMPENHADO", data = dbplot05()$EMPENHADO) %>%
         hc_add_series(name = "LIQUIDADO", data = dbplot05()$LIQUIDADO) %>%
-        hc_add_series(name = "PAGO", data = dbplot05()$PAGO) %>%
+        hc_add_series(name = "PAGO", data = dbplot05()$PAGO)
+      if(input$restoapagar == TRUE){
+        hc <- hc %>% hc_add_series(name = "RAP PAGO", data = dbplot05()$RAP_PAGO) %>% 
+          hc_add_series(name = "RAP CANCELADO", data = dbplot05()$RAP_CANCELADO)
+      }
+      hc <- hc %>% 
         hc_exporting(enabled = TRUE) %>%
         hc_chart(
           type = input$typeplot05,
@@ -514,22 +502,16 @@ server <-
 
 # Por Elemento de Despesa -------------------------------------------------
     dbplot06 <- reactive({
-      if (input$department06 == "IFB") {
+      if (input$unidade == "IFB") {
         db <- des_evo %>%
-          filter(CO_GD %in% c("3", "4"), substr(LANCAMENTO, 1, 4) == input$year06) %>%
+          filter(CO_GD %in% input$grupodespesa, substr(LANCAMENTO, 1, 4) == input$exercicio) %>%
           group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG = "IFB", NO_ED) %>%
-          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO"),
-                       .funs = sum)
+          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO", "RAP_PAGO", "RAP_CANCELADO"), .funs = sum)
       } else{
         db <- des_evo %>%
-          filter(
-            CO_GD %in% c("3", "4"),
-            substr(LANCAMENTO, 1, 4) == input$year06,
-            SG_UG == input$department06
-          ) %>%
+          filter(CO_GD %in% input$grupodespesa, substr(LANCAMENTO, 1, 4) == input$exercicio, SG_UG == input$unidade) %>%
           group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG, NO_ED) %>%
-          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO"),
-                       .funs = sum)
+          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO", "RAP_PAGO", "RAP_CANCELADO"), .funs = sum)
       }
       db
     })
@@ -542,7 +524,12 @@ server <-
         hc_xAxis(categories = dbplot06()$NO_ED) %>%
         hc_add_series(name = "EMPENHADO", data = dbplot06()$EMPENHADO) %>%
         hc_add_series(name = "LIQUIDADO", data = dbplot06()$LIQUIDADO) %>%
-        hc_add_series(name = "PAGO", data = dbplot06()$PAGO) %>%
+        hc_add_series(name = "PAGO", data = dbplot06()$PAGO)
+      if(input$restoapagar == TRUE){
+        hc <- hc %>% hc_add_series(name = "RAP PAGO", data = dbplot06()$RAP_PAGO) %>% 
+          hc_add_series(name = "RAP CANCELADO", data = dbplot06()$RAP_CANCELADO)
+      }
+      hc <- hc %>% 
         hc_exporting(enabled = TRUE) %>%
         hc_chart(
           type = input$typeplot06,
@@ -561,30 +548,32 @@ server <-
 
 # Comparativo - Por Execução da Despesa -----------------------------------
     dbplot07 <- reactive({
-      if(input$department07 == "CAMPI") {
+      if(input$department07 == "Sem Reitoria") {
         ug <- unique(des_evo[!des_evo$SG_UG == "REITORIA", ]$SG_UG)
       } else{
         ug <- unique(des_evo$SG_UG)
       }
       db <- des_evo %>%
-        filter(CO_GD %in% c("3", "4"),
-               substr(LANCAMENTO, 1, 4) == input$year07,
-               SG_UG %in% ug) %>%
+        filter(CO_GD %in% input$grupodespesa, substr(LANCAMENTO, 1, 4) == input$exercicio, SG_UG %in% ug) %>%
         group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG) %>%
-        summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO"),
-                     .funs = sum
+        summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO", "RAP_PAGO", "RAP_CANCELADO"), .funs = sum
         )
     })
     output$plot07 <- renderHighchart({
       hc <- highchart() %>%
         hc_title(text = "") %>%
-        hc_subtitle(text = paste(input$department07, unique(dbplot07()$ANO))) %>%
+        hc_subtitle(text = paste(input$unidade, unique(dbplot07()$ANO))) %>%
         hc_yAxis(title = list(text = "")) %>%
         hc_xAxis(title = list(text = "")) %>%
         hc_xAxis(categories = dbplot07()$SG_UG) %>%
         hc_add_series(name = "EMPENHADO", data = dbplot07()$EMPENHADO) %>%
         hc_add_series(name = "LIQUIDADO", data = dbplot07()$LIQUIDADO) %>%
-        hc_add_series(name = "PAGO", data = dbplot07()$PAGO) %>%
+        hc_add_series(name = "PAGO", data = dbplot07()$PAGO)
+      if(input$restoapagar == TRUE){
+        hc <- hc %>% hc_add_series(name = "RAP PAGO", data = dbplot07()$RAP_PAGO) %>% 
+          hc_add_series(name = "RAP CANCELADO", data = dbplot07()$RAP_CANCELADO)
+      }
+      hc <- hc %>% 
         hc_exporting(enabled = TRUE) %>%
         hc_chart(
           type = input$typeplot07,
@@ -602,18 +591,18 @@ server <-
     })
     dbplot08 <- reactive({
       db <- des_evo %>%
-        filter(CO_GD %in% c("3", "4"),
-               substr(LANCAMENTO, 1, 4) == input$year08,
+        filter(CO_GD %in% input$grupodespesa,
+               substr(LANCAMENTO, 1, 4) == input$exercicio,
                SG_UG == "REITORIA") %>%
         group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG) %>%
-        summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO"),
+        summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO", "RAP_PAGO", "RAP_CANCELADO"),
                      .funs = sum)
       db1 <- des_evo %>%
-        filter(CO_GD %in% c("3", "4"),
-               substr(LANCAMENTO, 1, 4) == input$year08,
+        filter(CO_GD %in% input$grupodespesa,
+               substr(LANCAMENTO, 1, 4) == input$exercicio,
                !SG_UG == "REITORIA") %>%
         group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG = "CAMPI") %>%
-        summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO"),
+        summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO", "RAP_PAGO", "RAP_CANCELADO"),
                      .funs = sum)
       db <- bind_rows(db, db1)
       db
@@ -627,7 +616,12 @@ server <-
         hc_xAxis(categories = dbplot08()$SG_UG) %>%
         hc_add_series(name = "EMPENHADO", data = dbplot08()$EMPENHADO) %>%
         hc_add_series(name = "LIQUIDADO", data = dbplot08()$LIQUIDADO) %>%
-        hc_add_series(name = "PAGO", data = dbplot08()$PAGO) %>%
+        hc_add_series(name = "PAGO", data = dbplot08()$PAGO)
+      if(input$restoapagar == TRUE){
+        hc <- hc %>% hc_add_series(name = "RAP PAGO", data = dbplot08()$RAP_PAGO) %>% 
+          hc_add_series(name = "RAP CANCELADO", data = dbplot08()$RAP_CANCELADO)
+      }
+      hc <- hc %>% 
         hc_exporting(enabled = TRUE) %>%
         hc_chart(
           type = input$typeplot08,
@@ -642,6 +636,24 @@ server <-
           hc %>% hc_plotOptions(series = list(stacking = input$groupplot08))
       }
       hc
+    })
+    dbplot09 <- reactive({
+      db <- des_evo %>%
+        filter(CO_GD %in% input$grupodespesa,
+               substr(LANCAMENTO, 1, 4) == input$exercicio,
+               SG_UG == "REITORIA") %>%
+        group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG) %>%
+        summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO", "RAP_PAGO", "RAP_CANCELADO"),
+                     .funs = sum)
+      db1 <- des_evo %>%
+        filter(CO_GD %in% input$grupodespesa,
+               substr(LANCAMENTO, 1, 4) == input$exercicio,
+               !SG_UG == "REITORIA") %>%
+        group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG = "CAMPI") %>%
+        summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO", "RAP_PAGO", "RAP_CANCELADO"),
+                     .funs = sum)
+      db <- bind_rows(db, db1)
+      db
     })
   }
 shinyApp(ui,server)
