@@ -1,0 +1,13 @@
+.Rproj.user
+.Rprofile
+.Rhistory
+.RData
+.Ruserdata
+.Rbuildignore
+packrat/
+img/
+data/despesas_2014.rds
+data/despesas_2015.rds
+data/despesas_2016.rds
+data/despesas_2017.rds
+data/despesas_2018.rds
