@@ -1,76 +1,35 @@
-download_portal <- function(opendata,item,end_date = Sys.Date(),start_date = "2013-01-01",all = FALSE,unzip = FALSE,mode = "wb",...){
-  # library -----------------------------------------------------------------
-  require(RCurl)
-  data <- c("1"="orcamento-despesa","2"="despesas","3"="despesas-execucao","4"="transferencias","5"="cpgf","6"="cpcc","7"="cpdc","8"="receitas","10"="licitacoes","11"="compras","12"="convenios","13"="bolsa-familia-pagamentos","14"="bolsa-familia-saques","15"="garantia-safra","16"="seguro-defeso","17"="peti","18"="servidores","19"="ceaf","20"="dirigentes","21"="ceis","22"="cepim","23"="cnep","24"="viagens","25"="imoveis-funcionais")
-  # missing values ----------------------------------------------------------
-  if(missing(opendata)) stop("missing 'opendata'. Valid 'opendata': ", paste(names(data),data,collapse = ", "))
-  if(!any(as.character(opendata) == as.character(seq(1:25)))) stop("'opendata' invalid input.")
-  item <- ifelse(!opendata %in% c("18","25"),"",ifelse(opendata == "18" & item == "1","_Servidores",ifelse(opendata == "18" & item == "2","_Militares",ifelse(opendata == "25" & item == "1","_MRE",ifelse(opendata == "25" & item == "2","_SPU",ifelse(opendata == "25" & item == "3", "_MD",ifelse(opendata == "25" & item == "4","_PR",NULL)))))))
-  if(is.null(item)) stop("'item' input not found.")
-  # select data -------------------------------------------------------------
-  URL <- paste0("http://www.portaltransparencia.gov.br/download-de-dados/",data[opendata],"/")
-  # function for loop -------------------------------------------------------
-  fun <- function(by,unzip){
-    date <- seq.Date(from = as.Date(start_date),to = as.Date(end_date),by = by)
-    date <- unique(paste0(substr(date,1,4),if(by == "year"){""}else{substr(date,6,7)},if(by %in% c("year","month")){""}else{substr(date,9,10)}))
-    link <- paste0(URL,date,item)
-    n <- length(date)
-    while(if(opendata %in% c("12","19","21","22","23")){url.exists(link) == FALSE}else{n > 0}){
-      link <- paste0(URL,date[n],item)
-      file <- paste0("data/",data[opendata],item,"-",date[n],".zip")
-      try(expr = download.file(url = link,destfile = file,mode = mode,...),silent = TRUE)
-      Sys.sleep(1)
-      if(file.info(file)$size == 0){
-        message("URL ",link," not found. Try reference: ",date[n-1])
-        unlink(file)
-      }else if(unzip == TRUE){
-        unzip(zipfile = file,exdir = "data/",overwrite = TRUE)
-        unlink(file)
-      }
-      n = n-1
-    }
-  }
-  # apply function to download a data ---------------------------------------
-  if(all == TRUE){
-    if(opendata %in% c("1","8","24")){fun(by = "year")}
-    if(opendata %in% c("3","4","5","6","7","10","11","13","14","15","16","17","18")){fun(by = "month")}
-    if(opendata %in% c("2","25","12","19","21","22","23")){fun(by = "day")}
-  }else{
-    if(opendata %in% c("1","8","24")){date <- substr(end_date,1,4)}
-    if(opendata %in% c("3","4","5","6","7","10","11","13","14","15","16","17","18")){date <- paste0(substr(end_date,1,4),substr(end_date,6,7))}
-    if(opendata %in% c("2","25","12","19","21","22","23")){date <- paste0(substr(end_date,1,4),substr(end_date,6,7),substr(end_date,9,10))}
-    link <- paste0(URL,date,item)
-    file <- paste0("data/",data[opendata],item,"-",date,".zip")
-    if(url.exists(link) == TRUE){
-      download.file(url = link,destfile = file,mode = "wb",...)
-      if(unzip == TRUE){
-        unzip(zipfile = file,exdir = "data/",overwrite = TRUE)
-        unlink(file)
-      }
-    }else{
-      stop("URL not found.")
-    }
-  }
-}
+# DATABASE ----------------------------------------------------------------
 
-extract_orc <- function(file,col_names,reference){
+extract_orc <- function(file, reference){
   require(openxlsx)
+  UG <- data.frame(
+    CO_UG = c("152140", "152141", '152142', "152143", "152144", "152145", "152146", "152147", "155145", "155150", "155151", "158501", "158143", '152139'), 
+    SG_UG = c("CTAG", "CSAM", "CBRA", "CTGC", "CSSB", "CCEI", "CEST", "CRFI", "CBRZ", "CCAN", 'CSOB', "CPLA", "RIFB", "CGAM"), 
+    CO_UO = "26428",
+    SG_UO = "IFB",
+    stringsAsFactors = FALSE)
   dbTitle <- read.xlsx(xlsxFile = if(missing(file)){file.choose()}else{file},sheet = 1,startRow = 1,rows = 1,rowNames = FALSE,colNames = TRUE,check.names = TRUE)
-  dbTitle <- dbTitle[,c(16:ncol(dbTitle))]
+  dbTitle <- dbTitle[, c(16:ncol(dbTitle))]
   dbTitle <- gsub(pattern = "[.]",replacement = "_",x = colnames(dbTitle))
-  db <- read.xlsx(xlsxFile = if(missing(file)){file.choose()}else{file},sheet = 1,startRow = 3,rowNames = FALSE,colNames = FALSE)
-  if(missing(col_names)){
-    col_names <- c("DATA","CO_UO","NO_UO","CO_UGE","NO_UGE","CO_UGR","NO_UGR","CO_CATEGORIA_ECONOMICA","NO_CATEGORIA_ECONOMICA","CO_GRUPO_DESPESA","NO_GRUPO_DESPESA","CO_MODALIDADE_APLICACAO","NO_MODALIDADE_APLICACAO","CO_ELEMENTO_DESPESA","NO_ELEMENTO_DESPESA","CO_SUBITEM","NO_SUBITEM","CO_ACAO_GOVERNO","NO_ACAO_GOVERNO","PTRES","CO_NATUREZA_DESPESA","NO_NATUREZA_DESPESA","CO_NATUREZA_DESPESA_DETALHADA","NO_NATUREZA_DESPESA_DETALHADA","CO_PLANO_INTERNO","NO_PLANO_INTERNO",dbTitle)}
+  db <- read.xlsx(xlsxFile = if(missing(file)){file.choose()}else{file},sheet = 1,startRow = 3,rowNames = FALSE,colNames = FALSE, na.strings = 0)
+  col_names <- c("LANCAMENTO", "CO_UO", "NO_UO", "CO_UGE", "NO_UGE", "CO_UGR", "NO_UGR", "CO_CATEGORIA_ECONOMICA", "NO_CATEGORIA_ECONOMICA", 
+                   "CO_GD", "NO_GD", "CO_MODALIDADE_APLICACAO", "NO_MODALIDADE_APLICACAO", "CO_ED",
+                   "NO_ED", "CO_SUBITEM", "NO_SUBITEM", "CO_ACAO", "NO_ACAO", "PTRES", "CO_NATUREZA_DESPESA",
+                   "NO_NATUREZA_DESPESA", "CO_NATUREZA_DESPESA_DETALHADA", "NO_NATUREZA_DESPESA_DETALHADA", "CO_PLANO_INTERNO", "NO_PLANO_INTERNO",
+                   dbTitle)
   colnames(db) <- col_names
-  db$CO_SUBITEM <-         ifelse(db$CO_SUBITEM %in% c("0","1","2","3","4","5","6","7","8","9"),paste0("0",db$CO_SUBITEM),db$CO_SUBITEM)
-  db$ANO <-                substr(db$DATA,1,4)
-  db$DATA <-               factor(db$DATA)
-  db$CO_PLANO_INTERNO <-   gsub(pattern = "[-]",replacement = "",db$CO_PLANO_INTERNO)
-  db$CO_UGR <-             ifelse(db$CO_UGR == "-8",db$CO_UGE,db$CO_UGR)
-  db$NO_UGR <-             ifelse(db$NO_UGR == "SEM INFORMACAO",db$NO_UGE,db$NO_UGR)
-  db$UO_SIGLA  <-          ifelse(db$CO_UO == "26428","IFB",ifelse(db$CO_UGR %in% c("152139","152140","152141","152142","152143","152144","152145","152146","152147","155145","155150","155151","158501","158143") |db$CO_UGE %in% c("152139","152140","152141","152142","152143","152144","152145","152146","152147","155145","155150","155151","158501","158143"),"IFB",db$NO_UO))
-  db$UGE_SIGLA <-          ifelse(db$CO_UGE == "152139", "CGAM",ifelse(db$CO_UGE == "152140", "CTAG",ifelse(db$CO_UGE == "152141", "CSAM",ifelse(db$CO_UGE == "152142", "CBRA",ifelse(db$CO_UGE == "152143", "CTGC",ifelse(db$CO_UGE == "152144", "CSSB",ifelse(db$CO_UGE == "152145", "CCEI",ifelse(db$CO_UGE == "152146", "CEST",ifelse(db$CO_UGE == "152147", "CRFI",ifelse(db$CO_UGE == "155145", "CBRZ",ifelse(db$CO_UGE == "155150", "CCAN",ifelse(db$CO_UGE == "155151", "CSOB",ifelse(db$CO_UGE == "158501", "CPLA",ifelse(db$CO_UGE == "158143", "REITORIA",ifelse(db$CO_UGE %in% c("010090","030203"),"EXTERNO","OUTROS")))))))))))))))
-  db$UGR_SIGLA <-          ifelse(db$CO_UGR == "152139", "CGAM",ifelse(db$CO_UGR == "152140", "CTAG",ifelse(db$CO_UGR == "152141", "CSAM",ifelse(db$CO_UGR == "152142", "CBRA",ifelse(db$CO_UGR == "152143", "CTGC",ifelse(db$CO_UGR == "152144", "CSSB",ifelse(db$CO_UGR == "152145", "CCEI",ifelse(db$CO_UGR == "152146", "CEST",ifelse(db$CO_UGR == "152147", "CRFI",ifelse(db$CO_UGR == "155145", "CBRZ",ifelse(db$CO_UGR == "155150", "CCAN",ifelse(db$CO_UGR == "155151", "CSOB",ifelse(db$CO_UGR == "158501", "CPLA",ifelse(db$CO_UGR == "158143", "REITORIA","OUTROS"))))))))))))))
+  db$CO_SUBITEM <- ifelse(nchar(db$CO_SUBITEM) == 1, paste0("0", db$CO_SUBITEM), db$CO_SUBITEM)
+  db$LANCAMENTO <- str_replace_all(
+    string = db$LANCAMENTO, 
+    c("JAN" = "01", "FEV" = "02", "MAR" = "03", "ABR" = "04", "MAI" = "05", "JUN" = "06",
+      "JUL" = "07", "AGO" = "08", "SET" = "09", "OUT" = "10", "NOV" = "11", "DEZ" = "12"))
+  db$LANCAMENTO <- paste0(substr(db$LANCAMENTO, 4, 7), "/", substr(db$LANCAMENTO, 1, 2))
+  db$CO_PLANO_INTERNO <- gsub(pattern = "[-]", replacement = "", db$CO_PLANO_INTERNO)
+  db$CO_UGR <- ifelse(db$CO_UGR == "-8", db$CO_UGE, db$CO_UGR)
+  db$NO_UGR <- ifelse(db$NO_UGR == "SEM INFORMACAO", db$NO_UGE, db$NO_UGR)
+  db <- left_join(x = db, y = UG[, c("CO_UG", "SG_UG")], by = c("CO_UGE" = "CO_UG"))
+  db$SG_UO <- ifelse(db$CO_UO == "26428", "IFB", "OUTRO")
+  db <- left_join(x = db, y = UG[, c("CO_UG", "SG_UG")], by = c("CO_UGR" = "CO_UG"), suffix = c("", "R"))
   db$CLASSIFICACAO <-
     ifelse(db$CO_ELEMENTO_DESPESA %in% c("14","33"),"DIARIAS E PASSAGENS",
     ifelse(db$CO_ELEMENTO_DESPESA %in% c("18","20"),"AUXILIO FINANCEIRO",
@@ -136,13 +95,33 @@ extract_orc <- function(file,col_names,reference){
            db$CO_ELEMENTO_DESPESA %in% c("47") & db$CO_SUBITEM %in% c("22"),
            "ENERGIA ELETRICA",
            db$CLASSIFICACAO)))))))))))
-  if(missing(reference)){
-    reference <- substr(x = file,nchar(file)-14,nchar(file)-5)}
   db$REFERENCIA <- reference
+  col_names <- c("LANCAMENTO", 
+                 "CO_UO", "NO_UO", "SG_UO", "CO_UGE", "NO_UGE", "SG_UG", "CO_UGR", "NO_UGR", "SG_UGR", 
+                 "CO_CATEGORIA_ECONOMICA", "NO_CATEGORIA_ECONOMICA", "CO_GRUPO_DESPESA", "NO_GRUPO_DESPESA", "CO_MODALIDADE_APLICACAO", "NO_MODALIDADE_APLICACAO", "CO_ELEMENTO_DESPESA", "NO_ELEMENTO_DESPESA", "CO_SUBITEM", "NO_SUBITEM", "CO_ACAO_GOVERNO", "NO_ACAO_GOVERNO", "PTRES", "CO_NATUREZA_DESPESA", "NO_NATUREZA_DESPESA", "CO_NATUREZA_DESPESA_DETALHADA", "NO_NATUREZA_DESPESA_DETALHADA", "CO_PLANO_INTERNO", "NO_PLANO_INTERNO", 
+                 "REFERENCIA",
+                 dbTitle)
+  db <- db[, col_names]
+  db[, sapply(db, class) == "character"] <- apply(X = db[, sapply(db, class) == "character"], MARGIN = 2, FUN = function(y){iconv(x = y, from = "latin1", to = "UTF-8")})
+  for(i in 1:length(dbTitle)){
+    if(any(is.na(db[, dbTitle[i]]))) db[, dbTitle[i]][which(is.na(db[, dbTitle[i]]))] <- 0
+  }
+  db$RAP_PAGO <- db$RESTOS_A_PAGAR_PROCESSADOS_PAGOS + db$RESTOS_A_PAGAR_NAO_PROCESSADOS_PAGOS
   return(db)
 }
 
-extract_redmine <- function(pool_connect,select_project,year_project,col_names,col_select,select_custom_values){
+import_multi_files <- function(local,file){
+  require(dplyr)
+  f <- list.files(path = local,pattern = file,full.names = TRUE)
+  db <- readRDS(f[1])
+  for(i in 2:length(f)){
+    db1 <- readRDS(f[i])
+    db <- bind_rows(db,db1)
+  }
+  return(db)
+}
+
+extract_redmine <- function(pool_connect, select_project, year_project, col_names, col_select, select_custom_values){
   require(pool)
   require(RMySQL)
   require(tidyr)
@@ -279,7 +258,18 @@ extract_redmine <- function(pool_connect,select_project,year_project,col_names,c
   return(issues)
 }
 
-aca_sit_ger <- function(database,department,year){
+import_data <- function(pasta = "data/", extensao = "rds"){
+  pathit <- function(FUN, path){
+    function(file, ...) FUN(file = file.path(path, file), ...)
+  }
+  readRDS2 <- pathit(readRDS, pasta)
+  temp = list.files(path = pasta, pattern= paste0("*.",extensao))
+  list2env(lapply(setNames(temp, make.names(gsub(paste0("*.", extensao, "$"), "", temp))), readRDS2), envir = .GlobalEnv)
+}
+
+# REDMINE -----------------------------------------------------------------
+
+aca_sit_ger <- function(database, department, year){
   if(missing(database)){
     if(exists("sgi",where = 1)){
       database <- sgi
@@ -318,7 +308,7 @@ aca_sit_ger <- function(database,department,year){
   return(db)
 }
 
-aca_sit_res <- function(database,department,type,year){
+aca_sit_res <- function(database, department, type, year){
   if(missing(database)){
     if(exists("sgi",where = 1)){
       database <- sgi
@@ -376,7 +366,7 @@ aca_sit_res <- function(database,department,type,year){
   return(db)
 }
 
-ind_sit_ger <- function(database,department,col_select,year){
+ind_sit_ger <- function(database, department, col_select, year){
   if(missing(database)){
     if(exists("sgi",where = 1)){
       database <- sgi
@@ -413,7 +403,7 @@ ind_sit_ger <- function(database,department,col_select,year){
   return(db)
 }
 
-orc_cla_uni <- function(database,department,year,reference,melt,...){
+orc_cla_uni <- function(database, department, year, reference, melt, ...){
   require(dplyr)
   require(reshape2)
   if(missing(database)){
@@ -468,3 +458,279 @@ orc_cla_uni <- function(database,department,year,reference,melt,...){
   }
   return(db)
 }
+
+
+# SIAPE -------------------------------------------------------------------
+
+siape_base <- function(data){
+  data[, sapply(data, class) == "character"] <-
+    apply(
+      X = data[, sapply(data, class) == "character"],
+      MARGIN = 2,
+      FUN = function (y) {
+        iconv(x = y, from = "latin1", to = "UTF-8")
+      }
+    )
+  data <- left_join(data, tb_uorg, by = "COD_UORG_LOTACAO")
+  data[is.na(data$UORG_LOTACAO_GRUPO), ]$UORG_LOTACAO_GRUPO <- "OUTROS"
+  data$FUNCAO_NIVEL <- paste(data$SIGLA_FUNCAO, data$NIVEL_FUNCAO)
+  return(data)
+}
+
+siape_quadro <- function(data){
+  doc <- data %>%
+    filter(SIGLA_FUNCAO == "-1", COD_ORG_LOTACAO == "26428", grepl("\\<PROF", DESCRICAO_CARGO)) %>% 
+    group_by(REFERENCIA = substr(REFERENCIA, 1, 6), UORG_LOTACAO_GRUPO) %>%
+    summarise(DOCENTE = n())
+  tec <- data %>%
+    filter(SIGLA_FUNCAO == "-1", COD_ORG_LOTACAO == "26428", !grepl("\\<PROF", DESCRICAO_CARGO)) %>% 
+    group_by(REFERENCIA = substr(REFERENCIA, 1, 6), UORG_LOTACAO_GRUPO) %>%
+    summarise(TECNICO = n())
+  db <- left_join(doc, tec, by = c("REFERENCIA", "UORG_LOTACAO_GRUPO"))
+  db$TOTAL <- db$DOCENTE + db$TECNICO
+  if(any(is.na(db$DOCENTE))) db[is.na(db$DOCENTE), ]$DOCENTE <- 0
+  if(any(is.na(db$TECNICO))) db[is.na(db$TECNICO), ]$TECNICO <- 0
+  if(any(is.na(db$TOTAL)))   db[is.na(db$TOTAL), ]$TOTAL <- 0
+  return(db)
+}
+
+siape_cargo <- function(data){
+  doc <- data %>%
+    filter(SIGLA_FUNCAO == "-1", COD_ORG_LOTACAO == "26428", grepl("\\<PROF", DESCRICAO_CARGO)) %>% 
+    group_by(
+      REFERENCIA = substr(REFERENCIA, 1, 6),
+      UORG_LOTACAO_GRUPO,
+      TIPO_CARGO = "DOCENTE",
+      DESCRICAO_CARGO) %>%
+    summarise(TOTAL = n())
+  tec <- data %>%
+    filter(SIGLA_FUNCAO == "-1", COD_ORG_LOTACAO == "26428", !grepl("\\<PROF", DESCRICAO_CARGO)) %>%
+    group_by(
+      REFERENCIA = substr(REFERENCIA, 1, 6),
+      UORG_LOTACAO_GRUPO,
+      TIPO_CARGO = "TECNICO",
+      DESCRICAO_CARGO) %>%
+    summarise(TOTAL = n())
+  db <- bind_rows(tec, doc)
+  return(db)
+}
+
+siape_jornada <- function(data){
+  doc <- data %>%
+    filter(SIGLA_FUNCAO == "-1", COD_ORG_LOTACAO == "26428", grepl("\\<PROF", DESCRICAO_CARGO)) %>%
+    group_by(
+      REFERENCIA = substr(REFERENCIA, 1, 6),
+      UORG_LOTACAO_GRUPO,
+      JORNADA_DE_TRABALHO) %>%
+    summarise(DOCENTE = n())
+  tec <- data %>%
+    filter(SIGLA_FUNCAO == "-1", COD_ORG_LOTACAO == "26428", !grepl("\\<PROF", DESCRICAO_CARGO)) %>%
+    group_by(
+      REFERENCIA = substr(REFERENCIA, 1, 6),
+      UORG_LOTACAO_GRUPO,
+      JORNADA_DE_TRABALHO) %>%
+    summarise(TECNICO = n())
+  db <- left_join(doc, tec, by = c("REFERENCIA", "JORNADA_DE_TRABALHO", "UORG_LOTACAO_GRUPO"))
+  db$TOTAL <- db$DOCENTE + db$TECNICO
+  if(any(is.na(db$DOCENTE))) db[is.na(db$DOCENTE), ]$DOCENTE <- 0
+  if(any(is.na(db$TECNICO))) db[is.na(db$TECNICO), ]$TECNICO <- 0
+  if(any(is.na(db$TOTAL)))   db[is.na(db$TOTAL), ]$TOTAL <- 0
+  return(db)
+}
+
+siape_rotatividade <- function(data, ref_ini, ref_end, group_by, sit_vinculo, sig_funcao){
+  if (nchar(ref_ini) < 8) ref_ini <- unique(data[grepl(pattern = ref_ini, x = data$REFERENCIA), ]$REFERENCIA)
+  if (nchar(ref_end) < 8) ref_end <- unique(data[grepl(pattern = ref_end, x = data$REFERENCIA), ]$REFERENCIA)
+  if (missing(sit_vinculo)) sit_vinculo <- "ATIVO PERMANENTE"
+  if (missing(sig_funcao)) sig_funcao <- "-1"
+  if (any(sig_funcao == "-1")) db <- data %>% filter(COD_ORG_LOTACAO == "26428", SITUACAO_VINCULO %in% sit_vinculo, SIGLA_FUNCAO %in% sig_funcao)
+  else                         db <- data %>% filter(COD_ORG_EXERCICIO == "26428", SITUACAO_VINCULO %in% sit_vinculo, SIGLA_FUNCAO %in% sig_funcao)
+  db1 <- db %>%
+    filter(REFERENCIA == ref_ini) %>% 
+    group_by_at(vars("REFERENCIA", "Id_SERVIDOR_PORTAL", group_by)) %>% 
+    summarise()
+  db2 <- db %>%
+    filter(REFERENCIA == ref_end) %>% 
+    group_by_at(vars("REFERENCIA", "Id_SERVIDOR_PORTAL", group_by)) %>%  
+    summarise()
+  db_saida <- left_join(x = db1, y = db2, by = "Id_SERVIDOR_PORTAL", suffix = c("", "_FIM"))
+  db_saida <- db_saida %>% 
+    filter(is.na(REFERENCIA_FIM)) %>% 
+    group_by_at(.vars = group_by) %>%
+    summarise(TOTAL = n()) %>% 
+    mutate(INICIO = ref_ini, FIM = ref_end, TIPO = "DESLIGAMENTO")
+  db_entrada <- left_join(x = db2, y = db1, by = "Id_SERVIDOR_PORTAL", suffix = c("", "_FIM"))
+  db_entrada <- db_entrada %>% 
+    filter(is.na(REFERENCIA_FIM)) %>% 
+    group_by_at(.vars = group_by) %>%
+    summarise(TOTAL = n())%>% 
+    mutate(INICIO = ref_ini, FIM = ref_end, TIPO = "ADMISSAO")
+  db <- bind_rows(db_saida, db_entrada)
+  return(db)
+}
+
+siape_rotatividade_acumulada <- function(data, ref_ini, ref_end, group_by, sit_vinculo, sig_funcao){
+  if (nchar(ref_ini) < 8) 
+    ref_ini <- unique(data[grepl(pattern = ref_ini, x = data$REFERENCIA), ]$REFERENCIA)
+  if (nchar(ref_end) < 8) 
+    ref_end <- unique(data[grepl(pattern = ref_end, x = data$REFERENCIA), ]$REFERENCIA)
+  ref <- unique(data$REFERENCIA)[which(unique(data$REFERENCIA) == ref_ini):which(unique(data$REFERENCIA) == ref_end)]
+  db <- siape_rotatividade(data = data, ref_ini = ref[1], ref_end = ref[2], group_by = group_by, sit_vinculo = sit_vinculo, sig_funcao = sig_funcao)  
+  i <- 2
+  while(i < length(ref)){
+    db0 <- siape_rotatividade(data = data, ref_ini = ref[i], ref_end = ref[i+1], group_by = group_by, sit_vinculo = sit_vinculo, sig_funcao = sig_funcao)
+    db <- bind_rows(db, db0)
+    i = i + 1
+  }
+  return(db)
+}
+
+# SHINY -------------------------------------------------------------------
+
+boxnew <- function(inputId, boxtitle, menu_selected, label, choices, selected, status, width_box, plot_highchart){
+  if(missing(menu_selected)){stop()}
+  if(any(menu_selected == "typeplot")){
+    typeplot <- shinyWidgets::radioGroupButtons(
+      inputId = paste0("typeplot",inputId),
+      label = if(label["typeplot"]=="empty"){NULL}else{label["typeplot"]},
+      choices = if(any(choices[["typeplot"]]=="empty")){c(`<i class='fa fa-bar-chart'></i>`="column",`<i class='fa fa-align-left'></i>`="bar",`<i class='fa fa-line-chart'></i>`="spline",`<i class='fa fa-area-chart'></i>`="areaspline")}else{choices[["typeplot"]]},
+      selected = if(selected["typeplot"]=="empty"){"column"}else{selected["typeplot"]})}
+  if(any(menu_selected == "groupplot")){
+    groupplot <- shinyWidgets::radioGroupButtons(
+      inputId = paste0("groupplot",inputId),
+      label =  if(label["groupplot"]=="empty"){NULL}else{label["groupplot"]},
+      choices = if(any(choices[["groupplot"]]=="empty")){c(`<i class='fa fa-square-o'></i>`=FALSE,`<i class='fa fa-object-ungroup'></i>`="normal",`<i class='fa fa-object-group'></i>`="percent")}else{choices[["groupplot"]]},
+      selected = if(selected["groupplot"]=="empty"){FALSE}else{selected["groupplot"]},
+      width = "100%")}
+  if(any(menu_selected == "dimension")){
+    dimension <- shinyWidgets::materialSwitch(
+      inputId = paste0("dimension",inputId), 
+      label = if(label["dimension"]=="empty"){FALSE}else{label["dimension"]}, 
+      status = status,
+      value = if(selected["dimension"]=="empty"){FALSE}else{TRUE})}
+  if(any(menu_selected == "year")){
+    year <- shiny::selectInput(
+      inputId = paste0("year",inputId), 
+      label = if(label["year"]=="empty"){NULL}else{label["year"]},
+      choices = choices[["year"]],
+      selected = selected["year"])}
+  if(any(menu_selected == "yearmonth")){
+    yearmonth <- shiny::selectInput(
+      inputId = paste0("yearmonth",inputId), 
+      label = if(label["yearmonth"]=="empty"){NULL}else{label["yearmonth"]},
+      choices = choices[["yearmonth"]],
+      selected = selected["yearmonth"])}
+  if(any(menu_selected == "department")){
+    department <- shiny::selectInput(
+      inputId = paste0("department",inputId), 
+      label = if(label["department"]=="empty"){NULL}else{label["department"]},
+      choices = choices[["department"]],
+      selected = selected["department"])}
+  if(any(menu_selected == "selectX")){
+    selectX <- shiny::selectInput(
+      inputId = paste0("selectX",inputId), 
+      label = if(label["selectX"]=="empty"){NULL}else{label["selectX"]},
+      choices = if(any(choices[["selectX"]]=="empty")){"X"}else{choices[["selectX"]]},
+      selected = if(selected["selectX"]=="empty"){"X"}else{selected["selectX"]})}
+  if(any(menu_selected == "selectY")){
+    selectY <- shiny::selectInput(
+      inputId = paste0("selectY",inputId), 
+      label = if(label["selectY"]=="empty"){NULL}else{label["selectY"]},
+      choices = if(any(choices[["selectY"]]=="empty")){"Y"}else{choices[["selectY"]]},
+      selected = if(selected["selectY"]=="empty"){"Y"}else{selected["selectY"]})}
+  boxnew <- 
+    shinydashboard::box(
+      title = NULL,
+      status = status,
+      width = if(missing(width_box)){6}else{width_box},
+      collapsible = F,
+      collapsed = F,
+      column(
+        width = 12,
+        column(
+          width = 11,
+          h4(boxtitle)),
+        column(
+          width = 1,align = 'right',
+          shinyWidgets::dropdownButton(
+            size = "sm",
+            circle = FALSE, 
+            status = status,  
+            width = "200px",
+            right = TRUE,
+            tooltip = tooltipOptions(title = "Filtro"),
+            if(any(menu_selected == "typeplot")){typeplot}else{NULL},
+            if(any(menu_selected == "groupplot")){groupplot}else{NULL},
+            if(any(menu_selected == "dimension")){dimension}else{NULL},
+            if(any(menu_selected == "year")){year}else{NULL},
+            if(any(menu_selected == "yearmonth")){yearmonth}else{NULL},
+            if(any(menu_selected == "department")){department}else{NULL},
+            if(any(menu_selected == "selectX")){selectX}else{NULL},
+            if(any(menu_selected == "selectY")){selectY}else{NULL}))),
+      column(
+        width = 12,
+        shinycssloaders::withSpinner(highchartOutput(paste0("plot",inputId)),type = 8L,color = "#3c8dbc")))
+  return(boxnew)
+}
+
+# HIGHCHARTER -------------------------------------------------------------
+
+hcoptslang <- function(){
+  hcoptslang <- getOption("highcharter.lang")
+  hcoptslang$decimalPoint <- ","
+  hcoptslang$thousandsSep <- "."
+  hcoptslang$downloadCSV <- "Baixar CSV"
+  hcoptslang$downloadJPEG <- "Baixar JPEG"
+  hcoptslang$downloadPDF <- "Baixar PDF"
+  hcoptslang$downloadPNG <- "Baixar PNG"
+  hcoptslang$downloadSVG <- "Baixar SVG"
+  hcoptslang$downloadXLS <- "Baixar XLS"
+  hcoptslang$loading <- "Carregando ..."
+  hcoptslang$printChart <- "Imprimir"
+  hcoptslang$viewData <- "Ver dados"
+  return(hcoptslang)
+}
+
+HighchartOrc <- function(data, subtitle, categories, input_plot){
+    hc <- highchart() %>%
+      hc_title(text = "") %>%
+      hc_subtitle(text = subtitle) %>%
+      hc_yAxis(title = list(text = "")) %>%
+      hc_xAxis(title = list(text = ""), categories = categories) %>%
+      hc_exporting(enabled = TRUE) %>% 
+      hc_chart(type = input_plot[["typeplot"]]) %>% 
+      hc_add_series(name = "EMPENHADO", data = data$EMPENHADO) %>%
+      hc_add_series(name = "LIQUIDADO", data = data$LIQUIDADO) %>%
+      hc_add_series(name = "PAGO", data = data$PAGO)
+    if(input_plot[["rap"]] == TRUE){
+      hc <- hc %>% 
+        hc_add_series(name = "RAP PAGO", data = data$RAP_PAGO)
+    }
+    if(input_plot[["dimension"]] == TRUE){
+      hc <- hc %>% 
+        hc_chart(options3d = list(enabled = input_plot[["dimension"]], beta = 10, alpha = 10))
+    }
+    if (input_plot[["groupplot"]] != FALSE) {
+      hc <- hc %>% 
+        hc_plotOptions(series = list(stacking = input_plot[["groupplot"]]))
+    }
+    hc
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
