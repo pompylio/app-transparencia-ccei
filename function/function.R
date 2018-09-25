@@ -12,10 +12,9 @@ extract_orc <- function(file, reference){
   dbTitle <- dbTitle[, c(16:ncol(dbTitle))]
   dbTitle <- gsub(pattern = "[.]",replacement = "_",x = colnames(dbTitle))
   db <- read.xlsx(xlsxFile = if(missing(file)){file.choose()}else{file},sheet = 1,startRow = 3,rowNames = FALSE,colNames = FALSE, na.strings = 0)
-  col_names <- c("LANCAMENTO", "CO_UO", "NO_UO", "CO_UGE", "NO_UGE", "CO_UGR", "NO_UGR", "CO_CATEGORIA_ECONOMICA", "NO_CATEGORIA_ECONOMICA", 
-                   "CO_GD", "NO_GD", "CO_MODALIDADE_APLICACAO", "NO_MODALIDADE_APLICACAO", "CO_ED",
-                   "NO_ED", "CO_SUBITEM", "NO_SUBITEM", "CO_ACAO", "NO_ACAO", "PTRES", "CO_NATUREZA_DESPESA",
-                   "NO_NATUREZA_DESPESA", "CO_NATUREZA_DESPESA_DETALHADA", "NO_NATUREZA_DESPESA_DETALHADA", "CO_PLANO_INTERNO", "NO_PLANO_INTERNO",
+  col_names <- c("LANCAMENTO", 
+                 "CO_UO", "NO_UO", "CO_UGE", "NO_UGE", "CO_UGR", "NO_UGR", 
+                 "CO_CATEGORIA_ECONOMICA", "NO_CATEGORIA_ECONOMICA", "CO_GD", "NO_GD", "CO_MODALIDADE_APLICACAO", "NO_MODALIDADE_APLICACAO", "CO_ED", "NO_ED", "CO_SUBITEM", "NO_SUBITEM", "CO_ACAO", "NO_ACAO", "PTRES", "CO_NATUREZA_DESPESA","NO_NATUREZA_DESPESA", "CO_NATUREZA_DESPESA_DETALHADA", "NO_NATUREZA_DESPESA_DETALHADA", "CO_PLANO_INTERNO", "NO_PLANO_INTERNO",
                    dbTitle)
   colnames(db) <- col_names
   db$CO_SUBITEM <- ifelse(nchar(db$CO_SUBITEM) == 1, paste0("0", db$CO_SUBITEM), db$CO_SUBITEM)
@@ -31,75 +30,75 @@ extract_orc <- function(file, reference){
   db$SG_UO <- ifelse(db$CO_UO == "26428", "IFB", "OUTRO")
   db <- left_join(x = db, y = UG[, c("CO_UG", "SG_UG")], by = c("CO_UGR" = "CO_UG"), suffix = c("", "R"))
   db$CLASSIFICACAO <-
-    ifelse(db$CO_ELEMENTO_DESPESA %in% c("14","33"),"DIARIAS E PASSAGENS",
-    ifelse(db$CO_ELEMENTO_DESPESA %in% c("18","20"),"AUXILIO FINANCEIRO",
-    ifelse(db$CO_ELEMENTO_DESPESA %in% c("30"),"MATERIAL DE CONSUMO",
-    ifelse(db$CO_ELEMENTO_DESPESA %in% c("31"),"OUTROS MATERIAIS",
-    ifelse(db$CO_ELEMENTO_DESPESA %in% c("32"),"OUTROS MATERIAIS",
-    ifelse(db$CO_ELEMENTO_DESPESA %in% c("35"),"OUTROS SERVICOS",
-    ifelse(db$CO_ELEMENTO_DESPESA %in% c("36"),"OUTROS SERVICOS",
-    ifelse(db$CO_ELEMENTO_DESPESA %in% c("37"),"OUTROS SERVICOS",
-    ifelse(db$CO_ELEMENTO_DESPESA %in% c("39"),"OUTROS SERVICOS",
-    ifelse(db$CO_ELEMENTO_DESPESA %in% c("47"),"TRIBUTOS E OBRIGACOES",
-    ifelse(db$CO_ELEMENTO_DESPESA %in% c("51"),"OBRAS INSTALACOES",
-    ifelse(db$CO_ELEMENTO_DESPESA %in% c("52"),"MATERIAL PERMANENTE",""))))))))))))
+    ifelse(db$CO_ED %in% c("14","33"),"DIARIAS E PASSAGENS",
+    ifelse(db$CO_ED %in% c("18","20"),"AUXILIO FINANCEIRO",
+    ifelse(db$CO_ED %in% c("30"),"MATERIAL DE CONSUMO",
+    ifelse(db$CO_ED %in% c("31"),"OUTROS MATERIAIS",
+    ifelse(db$CO_ED %in% c("32"),"OUTROS MATERIAIS",
+    ifelse(db$CO_ED %in% c("35"),"OUTROS SERVICOS",
+    ifelse(db$CO_ED %in% c("36"),"OUTROS SERVICOS",
+    ifelse(db$CO_ED %in% c("37"),"OUTROS SERVICOS",
+    ifelse(db$CO_ED %in% c("39"),"OUTROS SERVICOS",
+    ifelse(db$CO_ED %in% c("47"),"TRIBUTOS E OBRIGACOES",
+    ifelse(db$CO_ED %in% c("51"),"OBRAS INSTALACOES",
+    ifelse(db$CO_ED %in% c("52"),"MATERIAL PERMANENTE",""))))))))))))
   db$CLASSIFICACAO <-
-    ifelse(db$CO_ELEMENTO_DESPESA %in% c("30") & db$CO_SUBITEM %in% c("17","47") |
-           db$CO_ELEMENTO_DESPESA %in% c("35") & db$CO_SUBITEM %in% c("04") |
-           db$CO_ELEMENTO_DESPESA %in% c("36") & db$CO_SUBITEM %in% c("46") & db$CO_GRUPO_DESPESA %in% c("4") |
-           db$CO_ELEMENTO_DESPESA %in% c("36") & db$CO_SUBITEM %in% c("54","57") |
-           db$CO_ELEMENTO_DESPESA %in% c("37") & db$CO_SUBITEM %in% c("09","27","28") & db$CO_GRUPO_DESPESA %in% c("3") |
-           db$CO_ELEMENTO_DESPESA %in% c("37") & db$CO_SUBITEM %in% c("92","93") & db$CO_GRUPO_DESPESA %in% c("4") |
-           db$CO_ELEMENTO_DESPESA %in% c("39") & db$CO_SUBITEM %in% c("08","11","26","27","28","30","31","56") & db$CO_GRUPO_DESPESA %in% c("3") |
-           db$CO_ELEMENTO_DESPESA %in% c("39") & db$CO_SUBITEM %in% c("57","97") |
-           db$CO_ELEMENTO_DESPESA %in% c("39") & db$CO_SUBITEM %in% c("92","93","95") & db$CO_GRUPO_DESPESA %in% c("4") |
-           db$CO_ELEMENTO_DESPESA %in% c("52") & db$CO_SUBITEM %in% c("35")& db$CO_GRUPO_DESPESA %in% c("4"),
+    ifelse(db$CO_ED %in% c("30") & db$CO_SUBITEM %in% c("17","47") |
+           db$CO_ED %in% c("35") & db$CO_SUBITEM %in% c("04") |
+           db$CO_ED %in% c("36") & db$CO_SUBITEM %in% c("46") & db$CO_GD %in% c("4") |
+           db$CO_ED %in% c("36") & db$CO_SUBITEM %in% c("54","57") |
+           db$CO_ED %in% c("37") & db$CO_SUBITEM %in% c("09","27","28") & db$CO_GD %in% c("3") |
+           db$CO_ED %in% c("37") & db$CO_SUBITEM %in% c("92","93") & db$CO_GD %in% c("4") |
+           db$CO_ED %in% c("39") & db$CO_SUBITEM %in% c("08","11","26","27","28","30","31","56") & db$CO_GD %in% c("3") |
+           db$CO_ED %in% c("39") & db$CO_SUBITEM %in% c("57","97") |
+           db$CO_ED %in% c("39") & db$CO_SUBITEM %in% c("92","93","95") & db$CO_GD %in% c("4") |
+           db$CO_ED %in% c("52") & db$CO_SUBITEM %in% c("35")& db$CO_GD %in% c("4"),
            "TECNOLOGIA DA INFORMACAO",
-    ifelse(db$CO_ELEMENTO_DESPESA %in% c("36") & db$CO_SUBITEM %in% c("07","26","35") |
-           db$CO_ELEMENTO_DESPESA %in% c("37") & db$CO_SUBITEM %in% c("01","19","08") |
-           db$CO_ELEMENTO_DESPESA %in% c("39") & db$CO_SUBITEM %in% c("79"),
+    ifelse(db$CO_ED %in% c("36") & db$CO_SUBITEM %in% c("07","26","35") |
+           db$CO_ED %in% c("37") & db$CO_SUBITEM %in% c("01","19","08") |
+           db$CO_ED %in% c("39") & db$CO_SUBITEM %in% c("79"),
            "APOIO ADMINISTRATIVO",
-    ifelse(db$CO_ELEMENTO_DESPESA %in% c("36") & db$CO_SUBITEM %in% c("15") |
-           db$CO_ELEMENTO_DESPESA %in% c("36") & db$CO_SUBITEM %in% c("16","17") & db$CO_GRUPO_DESPESA %in% c("3") |
-           db$CO_ELEMENTO_DESPESA %in% c("39") & db$CO_SUBITEM %in% c("10","12","14") |
-           db$CO_ELEMENTO_DESPESA %in% c("39") & db$CO_SUBITEM %in% c("13") & db$CO_GRUPO_DESPESA %in% c("4"),
+    ifelse(db$CO_ED %in% c("36") & db$CO_SUBITEM %in% c("15") |
+           db$CO_ED %in% c("36") & db$CO_SUBITEM %in% c("16","17") & db$CO_GD %in% c("3") |
+           db$CO_ED %in% c("39") & db$CO_SUBITEM %in% c("10","12","14") |
+           db$CO_ED %in% c("39") & db$CO_SUBITEM %in% c("13") & db$CO_GD %in% c("4"),
            "LOCACAO DE BENS",
-    ifelse(db$CO_ELEMENTO_DESPESA %in% c("36") & db$CO_SUBITEM %in% c("18","20","21","22") |
-           db$CO_ELEMENTO_DESPESA %in% c("36") & db$CO_SUBITEM %in% c("19") & db$CO_GRUPO_DESPESA %in% c("4") |
-           db$CO_ELEMENTO_DESPESA %in% c("37") & db$CO_SUBITEM %in% c("04","06") & db$CO_GRUPO_DESPESA %in% c("3") |
-           db$CO_ELEMENTO_DESPESA %in% c("39") & db$CO_SUBITEM %in% c("18") & db$CO_GRUPO_DESPESA %in% c("4") |
-           db$CO_ELEMENTO_DESPESA %in% c("39") & db$CO_SUBITEM %in% c("19") & db$CO_GRUPO_DESPESA %in% c("3") |
-           db$CO_ELEMENTO_DESPESA %in% c("39") & db$CO_SUBITEM %in% c("16","17","20","21"),
+    ifelse(db$CO_ED %in% c("36") & db$CO_SUBITEM %in% c("18","20","21","22") |
+           db$CO_ED %in% c("36") & db$CO_SUBITEM %in% c("19") & db$CO_GD %in% c("4") |
+           db$CO_ED %in% c("37") & db$CO_SUBITEM %in% c("04","06") & db$CO_GD %in% c("3") |
+           db$CO_ED %in% c("39") & db$CO_SUBITEM %in% c("18") & db$CO_GD %in% c("4") |
+           db$CO_ED %in% c("39") & db$CO_SUBITEM %in% c("19") & db$CO_GD %in% c("3") |
+           db$CO_ED %in% c("39") & db$CO_SUBITEM %in% c("16","17","20","21"),
            "MANUTENCAO E CONSERVACAO",
-    ifelse(db$CO_ELEMENTO_DESPESA %in% c("36") & db$CO_SUBITEM %in% c("28") |
-           db$CO_ELEMENTO_DESPESA %in% c("39") & db$CO_SUBITEM %in% c("48"),
+    ifelse(db$CO_ED %in% c("36") & db$CO_SUBITEM %in% c("28") |
+           db$CO_ED %in% c("39") & db$CO_SUBITEM %in% c("48"),
            "SELECAO E TREINAMENTO",
-    ifelse(db$CO_ELEMENTO_DESPESA %in% c("36") & db$CO_SUBITEM %in% c("19") & db$CO_GRUPO_DESPESA %in% c("3") |
-           db$CO_ELEMENTO_DESPESA %in% c("37") & db$CO_SUBITEM %in% c("03")|
-           db$CO_ELEMENTO_DESPESA %in% c("39") & db$CO_SUBITEM %in% c("77"),
+    ifelse(db$CO_ED %in% c("36") & db$CO_SUBITEM %in% c("19") & db$CO_GD %in% c("3") |
+           db$CO_ED %in% c("37") & db$CO_SUBITEM %in% c("03")|
+           db$CO_ED %in% c("39") & db$CO_SUBITEM %in% c("77"),
            "VIGILANCIA OSTENSIVA",
-    ifelse(db$CO_ELEMENTO_DESPESA %in% c("36") & db$CO_SUBITEM %in% c("25") |
-           db$CO_ELEMENTO_DESPESA %in% c("37") & db$CO_SUBITEM %in% c("02") |
-           db$CO_ELEMENTO_DESPESA %in% c("39") & db$CO_SUBITEM %in% c("78"),
+    ifelse(db$CO_ED %in% c("36") & db$CO_SUBITEM %in% c("25") |
+           db$CO_ED %in% c("37") & db$CO_SUBITEM %in% c("02") |
+           db$CO_ED %in% c("39") & db$CO_SUBITEM %in% c("78"),
            "LIMPEZA E CONSERVACAO",
-    ifelse(db$CO_ELEMENTO_DESPESA %in% c("36") & db$CO_SUBITEM %in% c("27") |
-           db$CO_ELEMENTO_DESPESA %in% c("36") & db$CO_SUBITEM %in% c("59","63") & db$CO_GRUPO_DESPESA %in% c("3")|
-           db$CO_ELEMENTO_DESPESA %in% c("39") & db$CO_SUBITEM %in% c("47","58","59") |
-           db$CO_ELEMENTO_DESPESA %in% c("39") & db$CO_SUBITEM %in% c("49","91","92","93") & db$CO_GRUPO_DESPESA %in% c("3"),
+    ifelse(db$CO_ED %in% c("36") & db$CO_SUBITEM %in% c("27") |
+           db$CO_ED %in% c("36") & db$CO_SUBITEM %in% c("59","63") & db$CO_GD %in% c("3")|
+           db$CO_ED %in% c("39") & db$CO_SUBITEM %in% c("47","58","59") |
+           db$CO_ED %in% c("39") & db$CO_SUBITEM %in% c("49","91","92","93") & db$CO_GD %in% c("3"),
            "COMUNICACAO",
-    ifelse(db$CO_ELEMENTO_DESPESA %in% c("39") & db$CO_SUBITEM %in% c("44"),
+    ifelse(db$CO_ED %in% c("39") & db$CO_SUBITEM %in% c("44"),
            "AGUA E ESGOTO",
-    ifelse(db$CO_ELEMENTO_DESPESA %in% c("39") & db$CO_SUBITEM %in% c("90"),
+    ifelse(db$CO_ED %in% c("39") & db$CO_SUBITEM %in% c("90"),
            "COMUNICACAO OFICIAL",
-    ifelse(db$CO_ELEMENTO_DESPESA %in% c("39") & db$CO_SUBITEM %in% c("43") |
-           db$CO_ELEMENTO_DESPESA %in% c("47") & db$CO_SUBITEM %in% c("22"),
+    ifelse(db$CO_ED %in% c("39") & db$CO_SUBITEM %in% c("43") |
+           db$CO_ED %in% c("47") & db$CO_SUBITEM %in% c("22"),
            "ENERGIA ELETRICA",
            db$CLASSIFICACAO)))))))))))
   db$REFERENCIA <- reference
   col_names <- c("LANCAMENTO", 
                  "CO_UO", "NO_UO", "SG_UO", "CO_UGE", "NO_UGE", "SG_UG", "CO_UGR", "NO_UGR", "SG_UGR", 
-                 "CO_CATEGORIA_ECONOMICA", "NO_CATEGORIA_ECONOMICA", "CO_GRUPO_DESPESA", "NO_GRUPO_DESPESA", "CO_MODALIDADE_APLICACAO", "NO_MODALIDADE_APLICACAO", "CO_ELEMENTO_DESPESA", "NO_ELEMENTO_DESPESA", "CO_SUBITEM", "NO_SUBITEM", "CO_ACAO_GOVERNO", "NO_ACAO_GOVERNO", "PTRES", "CO_NATUREZA_DESPESA", "NO_NATUREZA_DESPESA", "CO_NATUREZA_DESPESA_DETALHADA", "NO_NATUREZA_DESPESA_DETALHADA", "CO_PLANO_INTERNO", "NO_PLANO_INTERNO", 
-                 "REFERENCIA",
+                 "CO_CATEGORIA_ECONOMICA", "NO_CATEGORIA_ECONOMICA", "CO_GD", "NO_GD", "CO_MODALIDADE_APLICACAO", "NO_MODALIDADE_APLICACAO", "CO_ED", "NO_ED", "CO_SUBITEM", "NO_SUBITEM", "CO_ACAO", "NO_ACAO", "PTRES", "CO_NATUREZA_DESPESA","NO_NATUREZA_DESPESA", "CO_NATUREZA_DESPESA_DETALHADA", "NO_NATUREZA_DESPESA_DETALHADA", "CO_PLANO_INTERNO", "NO_PLANO_INTERNO", 
+                 "CLASSIFICACAO", "REFERENCIA",
                  dbTitle)
   db <- db[, col_names]
   db[, sapply(db, class) == "character"] <- apply(X = db[, sapply(db, class) == "character"], MARGIN = 2, FUN = function(y){iconv(x = y, from = "latin1", to = "UTF-8")})
@@ -585,93 +584,137 @@ siape_rotatividade_acumulada <- function(data, ref_ini, ref_end, group_by, sit_v
   return(db)
 }
 
+# SIAFI -------------------------------------------------------------------
+
+siafi_classificacao <- function(data, group, sum_by){
+  if(missing(group))
+    group <- c("LANCAMENTO", "SG_UG", "CLASSIFICACAO")
+  else
+    group <- c("LANCAMENTO", "SG_UG", "CLASSIFICACAO", group)
+  if(missing(sum_by))
+    sum_by <- c("DESPESAS_EMPENHADAS", "DESPESAS_LIQUIDADAS", "DESPESAS_PAGAS", "RAP_PAGO")
+  else
+    sum_by <- c("DESPESAS_EMPENHADAS", "DESPESAS_LIQUIDADAS", "DESPESAS_PAGAS", "RAP_PAGO", summarise)
+  db <- db_siafi_tg %>% 
+    group_by_at(vars(group)) %>% 
+    summarise_at(vars(sum_by), .funs = sum)
+  return(db)
+}
+
 # SHINY -------------------------------------------------------------------
 
 boxnew <- function(inputId, boxtitle, menu_selected, label, choices, selected, status, width_box, plot_highchart){
-  if(missing(menu_selected)){stop()}
-  if(any(menu_selected == "typeplot")){
-    typeplot <- shinyWidgets::radioGroupButtons(
-      inputId = paste0("typeplot",inputId),
-      label = if(label["typeplot"]=="empty"){NULL}else{label["typeplot"]},
-      choices = if(any(choices[["typeplot"]]=="empty")){c(`<i class='fa fa-bar-chart'></i>`="column",`<i class='fa fa-align-left'></i>`="bar",`<i class='fa fa-line-chart'></i>`="spline",`<i class='fa fa-area-chart'></i>`="areaspline")}else{choices[["typeplot"]]},
-      selected = if(selected["typeplot"]=="empty"){"column"}else{selected["typeplot"]})}
-  if(any(menu_selected == "groupplot")){
-    groupplot <- shinyWidgets::radioGroupButtons(
-      inputId = paste0("groupplot",inputId),
-      label =  if(label["groupplot"]=="empty"){NULL}else{label["groupplot"]},
-      choices = if(any(choices[["groupplot"]]=="empty")){c(`<i class='fa fa-square-o'></i>`=FALSE,`<i class='fa fa-object-ungroup'></i>`="normal",`<i class='fa fa-object-group'></i>`="percent")}else{choices[["groupplot"]]},
-      selected = if(selected["groupplot"]=="empty"){FALSE}else{selected["groupplot"]},
-      width = "100%")}
-  if(any(menu_selected == "dimension")){
-    dimension <- shinyWidgets::materialSwitch(
-      inputId = paste0("dimension",inputId), 
-      label = if(label["dimension"]=="empty"){FALSE}else{label["dimension"]}, 
-      status = status,
-      value = if(selected["dimension"]=="empty"){FALSE}else{TRUE})}
-  if(any(menu_selected == "year")){
-    year <- shiny::selectInput(
-      inputId = paste0("year",inputId), 
-      label = if(label["year"]=="empty"){NULL}else{label["year"]},
-      choices = choices[["year"]],
-      selected = selected["year"])}
-  if(any(menu_selected == "yearmonth")){
-    yearmonth <- shiny::selectInput(
-      inputId = paste0("yearmonth",inputId), 
-      label = if(label["yearmonth"]=="empty"){NULL}else{label["yearmonth"]},
-      choices = choices[["yearmonth"]],
-      selected = selected["yearmonth"])}
-  if(any(menu_selected == "department")){
-    department <- shiny::selectInput(
-      inputId = paste0("department",inputId), 
-      label = if(label["department"]=="empty"){NULL}else{label["department"]},
-      choices = choices[["department"]],
-      selected = selected["department"])}
-  if(any(menu_selected == "selectX")){
-    selectX <- shiny::selectInput(
-      inputId = paste0("selectX",inputId), 
-      label = if(label["selectX"]=="empty"){NULL}else{label["selectX"]},
-      choices = if(any(choices[["selectX"]]=="empty")){"X"}else{choices[["selectX"]]},
-      selected = if(selected["selectX"]=="empty"){"X"}else{selected["selectX"]})}
-  if(any(menu_selected == "selectY")){
-    selectY <- shiny::selectInput(
-      inputId = paste0("selectY",inputId), 
-      label = if(label["selectY"]=="empty"){NULL}else{label["selectY"]},
-      choices = if(any(choices[["selectY"]]=="empty")){"Y"}else{choices[["selectY"]]},
-      selected = if(selected["selectY"]=="empty"){"Y"}else{selected["selectY"]})}
-  boxnew <- 
-    shinydashboard::box(
-      title = NULL,
-      status = status,
-      width = if(missing(width_box)){6}else{width_box},
-      collapsible = F,
-      collapsed = F,
-      column(
-        width = 12,
+  if(missing(menu_selected)){
+    boxnew <- 
+      shinydashboard::box(
+        status = status,
+        width = width_box,
+        collapsible = F,
+        collapsed = F,
+        title = boxtitle,
+        shinycssloaders::withSpinner(highchartOutput(paste0("plot",inputId)),type = 8L,color = "#3c8dbc"))
+  } else {
+    if(any(menu_selected == "typeplot")){
+      typeplot <- shinyWidgets::radioGroupButtons(
+        inputId = paste0("typeplot",inputId),
+        label = if(label["typeplot"]=="empty"){NULL}else{label["typeplot"]},
+        choices = if(any(choices[["typeplot"]]=="empty")){c(`<i class='fa fa-bar-chart'></i>`="column",`<i class='fa fa-align-left'></i>`="bar",`<i class='fa fa-line-chart'></i>`="spline",`<i class='fa fa-area-chart'></i>`="areaspline")}else{choices[["typeplot"]]},
+        selected = if(selected["typeplot"]=="empty"){"column"}else{selected["typeplot"]})}
+    if(any(menu_selected == "groupplot")){
+      groupplot <- shinyWidgets::radioGroupButtons(
+        inputId = paste0("groupplot",inputId),
+        label =  if(label["groupplot"]=="empty"){NULL}else{label["groupplot"]},
+        choices = if(any(choices[["groupplot"]]=="empty")){c(`<i class='fa fa-square-o'></i>`=FALSE,`<i class='fa fa-object-ungroup'></i>`="normal",`<i class='fa fa-object-group'></i>`="percent")}else{choices[["groupplot"]]},
+        selected = if(selected["groupplot"]=="empty"){FALSE}else{selected["groupplot"]},
+        width = "100%")}
+    if(any(menu_selected == "dimension")){
+      dimension <- shinyWidgets::materialSwitch(
+        inputId = paste0("dimension",inputId), 
+        label = if(label["dimension"]=="empty"){FALSE}else{label["dimension"]}, 
+        status = status,
+        value = if(selected["dimension"]=="empty"){FALSE}else{TRUE})}
+    if(any(menu_selected == "year")){
+      year <- shiny::selectInput(
+        inputId = paste0("year",inputId), 
+        label = if(label["year"]=="empty"){NULL}else{label["year"]},
+        choices = choices[["year"]],
+        selected = selected["year"])}
+    if(any(menu_selected == "yearmonth")){
+      yearmonth <- shiny::selectInput(
+        inputId = paste0("yearmonth",inputId), 
+        label = if(label["yearmonth"]=="empty"){NULL}else{label["yearmonth"]},
+        choices = choices[["yearmonth"]],
+        selected = selected["yearmonth"])}
+    if(any(menu_selected == "department")){
+      department <- shiny::selectInput(
+        inputId = paste0("department",inputId), 
+        label = if(label["department"]=="empty"){NULL}else{label["department"]},
+        choices = choices[["department"]],
+        selected = selected["department"])}
+    if(any(menu_selected == "programa")){
+      programa <- shiny::selectInput(
+        inputId = paste0("programa",inputId), 
+        label = if(label["programa"]=="empty"){NULL}else{label["programa"]},
+        choices = if(any(choices[["programa"]]=="empty")){"X"}else{choices[["programa"]]},
+        selected = if(selected["programa"]=="empty"){"X"}else{selected["programa"]})}
+    if(any(menu_selected == "selectY")){
+      selectY <- shiny::selectInput(
+        inputId = paste0("selectY",inputId), 
+        label = if(label["selectY"]=="empty"){NULL}else{label["selectY"]},
+        choices = if(any(choices[["selectY"]]=="empty")){"Y"}else{choices[["selectY"]]},
+        selected = if(selected["selectY"]=="empty"){"Y"}else{selected["selectY"]})}
+    if(any(menu_selected == "filterx")){
+      filterx <- shiny::selectInput(
+        inputId = paste0("filterx",inputId), 
+        label = if(label["filterx"]=="empty"){NULL}else{label["filterx"]},
+        multiple = TRUE, 
+        choices = if(any(choices[["filterx"]]=="empty")){"X"}else{choices[["filterx"]]},
+        selected = if(selected["filterx"]=="empty"){choices[["filterx"]]}else{selected["filterx"]})}
+    if(any(menu_selected == "filtery")){
+      filtery <- shiny::selectInput(
+        inputId = paste0("filtery",inputId), 
+        label = if(label["filtery"]=="empty"){NULL}else{label["filtery"]},
+        multiple = TRUE, 
+        choices = if(any(choices[["filtery"]]=="empty")){"Y"}else{choices[["filtery"]]},
+        selected = if(selected["filtery"]=="empty"){"Y"}else{selected["filtery"]})}
+    boxnew <- 
+      shinydashboard::box(
+        title = NULL,
+        status = status,
+        width = if(missing(width_box)){6}else{width_box},
+        collapsible = F,
+        collapsed = F,
         column(
-          width = 11,
-          h4(boxtitle)),
+          width = 12,
+          column(
+            width = 11,
+            h4(boxtitle)),
+          column(
+            width = 1, align = 'right',
+            shinyWidgets::dropdownButton(
+              size = "sm",
+              circle = FALSE, 
+              status = status,  
+              width = "200px",
+              right = TRUE,
+              tooltip = tooltipOptions(title = "Filtro"),
+              if(any(menu_selected == "typeplot")){typeplot}else{NULL},
+              if(any(menu_selected == "groupplot")){groupplot}else{NULL},
+              if(any(menu_selected == "dimension")){dimension}else{NULL},
+              if(any(menu_selected == "year")){year}else{NULL},
+              if(any(menu_selected == "yearmonth")){yearmonth}else{NULL},
+              if(any(menu_selected == "department")){department}else{NULL},
+              if(any(menu_selected == "programa")){programa}else{NULL},
+              if(any(menu_selected == "selectY")){selectY}else{NULL},
+              if(any(menu_selected == "filterx")){filterx}else{NULL},
+              if(any(menu_selected == "filtery")){filtery}else{NULL}))),
         column(
-          width = 1,align = 'right',
-          shinyWidgets::dropdownButton(
-            size = "sm",
-            circle = FALSE, 
-            status = status,  
-            width = "200px",
-            right = TRUE,
-            tooltip = tooltipOptions(title = "Filtro"),
-            if(any(menu_selected == "typeplot")){typeplot}else{NULL},
-            if(any(menu_selected == "groupplot")){groupplot}else{NULL},
-            if(any(menu_selected == "dimension")){dimension}else{NULL},
-            if(any(menu_selected == "year")){year}else{NULL},
-            if(any(menu_selected == "yearmonth")){yearmonth}else{NULL},
-            if(any(menu_selected == "department")){department}else{NULL},
-            if(any(menu_selected == "selectX")){selectX}else{NULL},
-            if(any(menu_selected == "selectY")){selectY}else{NULL}))),
-      column(
-        width = 12,
-        shinycssloaders::withSpinner(highchartOutput(paste0("plot",inputId)),type = 8L,color = "#3c8dbc")))
+          width = 12,
+          shinycssloaders::withSpinner(highchartOutput(paste0("plot",inputId)),type = 8L,color = "#3c8dbc")))
+  }
   return(boxnew)
-}
+  }
+  
 
 # HIGHCHARTER -------------------------------------------------------------
 
@@ -691,36 +734,85 @@ hcoptslang <- function(){
   return(hcoptslang)
 }
 
-HighchartOrc <- function(data, subtitle, categories, input_plot){
-    hc <- highchart() %>%
-      hc_title(text = "") %>%
-      hc_subtitle(text = subtitle) %>%
-      hc_yAxis(title = list(text = "")) %>%
-      hc_xAxis(title = list(text = ""), categories = categories) %>%
-      hc_exporting(enabled = TRUE) %>% 
-      hc_chart(type = input_plot[["typeplot"]]) %>% 
-      hc_add_series(name = "EMPENHADO", data = data$EMPENHADO) %>%
-      hc_add_series(name = "LIQUIDADO", data = data$LIQUIDADO) %>%
-      hc_add_series(name = "PAGO", data = data$PAGO)
-    if(input_plot[["rap"]] == TRUE){
-      hc <- hc %>% 
-        hc_add_series(name = "RAP PAGO", data = data$RAP_PAGO)
+HighchartOrc <- function(data, series, subtitle, credits, categories, input_plot){
+  hc <- highchart() %>%
+    hc_title(text = "") %>%
+    hc_subtitle(text = subtitle) %>%
+    hc_yAxis(title = list(text = "")) %>%
+    hc_xAxis(title = list(text = ""), categories = c(list(categories)[[1]], categories)) %>%
+    hc_exporting(enabled = TRUE)
+  if (any(series == "EMPENHADO")) hc <- hc %>% hc_add_series(name = "EMPENHADO", data = data$EMPENHADO, type = input_plot[["typeplot"]])
+  if (any(series == "LIQUIDADO")) hc <- hc %>% hc_add_series(name = "LIQUIDADO", data = data$LIQUIDADO, type = input_plot[["typeplot"]])
+  if (any(series == "PAGO"))      hc <- hc %>% hc_add_series(name = "PAGO", data = data$PAGO, type = input_plot[["typeplot"]]) 
+  if (any(series == "RAP_PAGO")){
+    if(input_plot[["typeplot"]] == "areaspline"){
+        hc <- hc %>% hc_add_series(name = "RAP PAGO", data = data$RAP_PAGO, type = "spline")
+      } else {
+        hc <- hc %>% hc_add_series(name = "RAP PAGO", data = data$RAP_PAGO, type = input_plot[["typeplot"]])
+      }
     }
-    if(input_plot[["dimension"]] == TRUE){
-      hc <- hc %>% 
-        hc_chart(options3d = list(enabled = input_plot[["dimension"]], beta = 10, alpha = 10))
+  if (any(series == "TOTAL"))   hc <- hc %>% hc_add_series(name = "TOTAL", data = data$TOTAL, type = input_plot[["typeplot"]])
+  if (any(series == "DOCENTE")) hc <- hc %>% hc_add_series(name = "DOCENTES", data = data$DOCENTE, type = input_plot[["typeplot"]])
+  if (any(series == "TECNICO")) hc <- hc %>% hc_add_series(name = "TÉCNICOS", data = data$TECNICO, type =  input_plot[["typeplot"]])
+  if(input_plot[["dimension"]] == TRUE){
+    hc <- hc %>% 
+      hc_chart(options3d = list(enabled = input_plot[["dimension"]], beta = 10, alpha = 10))
     }
-    if (input_plot[["groupplot"]] != FALSE) {
-      hc <- hc %>% 
-        hc_plotOptions(series = list(stacking = input_plot[["groupplot"]]))
-    }
-    hc
+  if (input_plot[["groupplot"]] != FALSE) {
+    hc <- hc %>% 
+      hc_plotOptions(series = list(stacking = input_plot[["groupplot"]]))
+  }
+  if (input_plot[["groupplot"]] == "percent"){
+    hc <- hc %>% hc_tooltip(pointFormat = '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.percentage:.0f}%)<br/>')
+  }
+  if (!missing(credits)){
+    href <- ifelse(credits == "Portal da Transparência", "http://portaltransparencia.gov.br/download-de-dados","")
+    hc <- hc %>% hc_credits(enabled = TRUE, text = paste("Fonte:", credits), href = href)
+  }
+  hc
 }
 
-
-
-
-
+highchart_new <- function(data, categories, series, subtitle, credits, input_plot, serie_type){
+  hc <- highchart() %>%
+    hc_title(text = "") %>%
+    hc_subtitle(text = subtitle) %>%
+    hc_yAxis(title = list(text = "")) %>%
+    hc_xAxis(title = list(text = ""), categories = c(list(categories)[[1]], categories)) %>%
+    hc_exporting(enabled = TRUE) %>% 
+    hc_chart(type = input_plot[["typeplot"]])
+    if (any(names(series) == "SERIE1")) {hc <- hc %>% hc_add_series(name = series[["SERIE1"]],  data = data$SERIE1)}
+    if (any(names(series) == "SERIE2")) {hc <- hc %>% hc_add_series(name = series[["SERIE2"]],  data = data$SERIE2)}
+    if (any(names(series) == "SERIE3")) {hc <- hc %>% hc_add_series(name = series[["SERIE3"]],  data = data$SERIE3)}
+    if (any(names(series) == "SERIE4")) {hc <- hc %>% hc_add_series(name = series[["SERIE4"]],  data = data$SERIE4)}
+    if (any(names(series) == "SERIE5")) {hc <- hc %>% hc_add_series(name = series[["SERIE5"]],  data = data$SERIE5)}
+    if (any(names(series) == "SERIE6")) {hc <- hc %>% hc_add_series(name = series[["SERIE6"]],  data = data$SERIE6)}
+    if (any(names(series) == "SERIE7")) {hc <- hc %>% hc_add_series(name = series[["SERIE7"]],  data = data$SERIE7)}
+    if (any(names(series) == "SERIE8")) {hc <- hc %>% hc_add_series(name = series[["SERIE8"]],  data = data$SERIE8)}
+    if (any(names(series) == "SERIE9")) {hc <- hc %>% hc_add_series(name = series[["SERIE9"]],  data = data$SERIE9)}
+    if (any(names(series) == "SERIE10")) {hc <- hc %>% hc_add_series(name = series[["SERIE10"]], data = data$SERIE10)}
+  if (any(names(series) == "SERIE_TYPE")) {hc <- hc %>% hc_add_series(name = series[["SERIE_TYPE"]], data = data$SERIE_TYPE, type = serie_type)}
+    if (any(names(series) == "SERIE_RAP")) {
+      if (input_plot[["typeplot"]] == "areaspline"){
+        hc <- hc %>% hc_add_series(name = series[["SERIE_RAP"]], data = data$SERIE_RAP, type = "spline")
+        } else {
+          hc <- hc %>% hc_add_series(name = series[["SERIE_RAP"]], data = data$SERIE_RAP, type = input_plot[["typeplot"]])
+        }
+    }
+  if (input_plot[["dimension"]] == TRUE){
+    hc <- hc %>% hc_chart(options3d = list(enabled = input_plot[["dimension"]], beta = 10, alpha = 10))
+    }
+  if (input_plot[["groupplot"]] != FALSE) {
+    hc <- hc %>% hc_plotOptions(series = list(stacking = input_plot[["groupplot"]]))
+    }
+  if (input_plot[["groupplot"]] == "percent") {
+    hc <- hc %>% hc_tooltip(pointFormat = '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.percentage:.0f}%)<br/>')
+    }
+  if (!missing(credits)){
+    href <- ifelse(credits == "Portal da Transparência", "http://portaltransparencia.gov.br/download-de-dados","")
+    hc <- hc %>% hc_credits(enabled = TRUE, text = paste("Fonte:", credits), href = href)
+    }
+  hc
+}
 
 
 
