@@ -9,6 +9,7 @@ suppressMessages(require(shinyjs))
 suppressMessages(require(tidyverse))
 suppressMessages(require(highcharter))
 suppressMessages(require(reshape2))
+suppressMessages(require(treemap))
 # Functions
 source("function/function.R",encoding = "UTF-8")
 # Data
@@ -18,7 +19,7 @@ options(highcharter.lang = hcoptslang())
 ui <-
   dashboardPagePlus(
     dashboardHeaderPlus( 
-      title = strong("Gestão CCEI"),
+      title = strong("Painel CCEI"),
       titleWidth = 200,
       enable_rightsidebar = TRUE,
       rightSidebarIcon = "gears"), 
@@ -30,42 +31,38 @@ ui <-
           text = strong("ORÇAMENTO"),
           tabName = "orcamento",
           icon = icon("money"),
-          startExpanded = FALSE,
-          menuSubItem(
-            text = strong("Evolução"),
-            tabName = "evolucao",
-            icon = icon("angle-right")),
-          menuSubItem(
-            text = strong("Categoria"),
-            tabName = "categoria",
-            icon = icon("angle-right")),
-          menuSubItem(
-            text = strong("Comparativo"),
-            tabName = "comparativo",
-            icon = icon("angle-right"))),
+          startExpanded = TRUE,
+          menuItem(
+            text = strong("Execução da despesa"),
+            tabName = "execucao_despesa",
+            startExpanded = TRUE,
+            menuSubItem(
+              text = strong("Evolução"),
+              tabName = "evolucao"
+              ),
+            menuSubItem(
+              text = strong("Categoria"),
+              tabName = "categoria"),
+            menuSubItem(
+              text = strong("Comparativo"),
+              tabName = "comparativo")
+            )
+          ),
         menuItem(
           text = strong("PESSOAL"),
           tabName = "pessoal",
           icon = icon("group"),
           menuSubItem(
             text = strong("Evolução"),
-            tabName = "evolucao_pessoal",
-            icon = icon("angle-right")
+            tabName = "evolucao_pessoal"
             ),
           menuSubItem(
             text = strong("Categoria"),
-            tabName = "categoria_pessoal",
-            icon = icon("angle-right")
+            tabName = "categoria_pessoal"
           ),
           menuSubItem(
             text = strong("Rotatividade"),
-            tabName = "rotatividade",
-            icon = icon("angle-right")
-            ),
-          menuSubItem(
-            text = strong("Comparativo"),
-            tabName = "comparativo_pessoal",
-            icon = icon("angle-right")
+            tabName = "rotatividade"
             )
           )
         )
@@ -77,27 +74,36 @@ ui <-
           fluidRow(
             boxnew(
               inputId = "01", # 01 Execução da despesa por ano ----
-              width_box = 5,
+              width_box = 6,
               status = "warning",
-              boxtitle = "Execução da despesa por ano",
+              boxtitle = "Por ano",
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
               choices = c(typeplot = "empty", groupplot = "empty"),
               selected = c(typeplot = "empty", groupplot = "empty", dimension = "empty")),
             boxnew(
-              inputId = "02", # 02 Execução da despesa por mês (acumulado) -----
-              width_box = 7,
+              inputId = "02", # 02 Valores pagos por exercício de referência ----
+              width_box = 6,
               status = "warning",
-              boxtitle = "Execução da despesa por mês (acumulado)",
+              boxtitle = "Valores pagos por exercício de referência",
+              menu_selected = c("typeplot", "groupplot", "dimension"),
+              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
+              choices = c(typeplot = "empty", groupplot = "empty"),
+              selected = c(typeplot = "column", groupplot = "percent", dimension = "empty")),
+            boxnew(
+              inputId = "03", # 03 Execução da despesa por mês (acumulado) -----
+              width_box = 12,
+              status = "warning",
+              boxtitle = "Por mês (acumulado)",
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
               choices = c(typeplot = "empty", groupplot = "empty"),
               selected = c(typeplot = "areaspline", groupplot = "empty", dimension = "empty")),
             boxnew(
-              inputId = "03", # 03 Execução da despesa por mês (não acumulado) ----
+              inputId = "04", # 04 Execução da despesa por mês (não acumulado) ----
               width_box = 12,
               status = "warning",
-              boxtitle = "Execução da despesa por mês (não acumulado)",
+              boxtitle = "Por mês (não acumulado)",
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
               choices = list(typeplot = "empty", groupplot = "empty"),
@@ -108,28 +114,37 @@ ui <-
           tabName = "categoria", 
           fluidRow(
             boxnew(
-              inputId = "04", # 04 Execução da despesa por grupo de despesa ----
-              width_box = 5,
+              inputId = "05", # 05 Execução da despesa por grupo de despesa ----
+              width_box = 6,
               status = "warning",
-              boxtitle = "Execução da despesa por grupo de despesa",
+              boxtitle = "Por grupo de despesa",
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
               choices = c(typeplot = "empty", groupplot = "empty"),
               selected = c(typeplot = "column", groupplot = "empty", dimension = "empty")),
             boxnew(
-              inputId = "05", # 05 Execução da despesa por ação orçamentária ----
-              width_box = 7,
+              inputId = "06", # 06 Execução da despesa por programa ----
+              width_box = 6,
               status = "warning",
-              boxtitle = "Execução da despesa por ação orçamentária",
+              boxtitle = "Por programa",
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
               choices = c(typeplot = "empty", groupplot = "empty"),
               selected = c(typeplot = "column", groupplot = "empty", dimension = "empty")),
             boxnew(
-              inputId = "06", # 06 Execução da despesa por elemento de despesa ----
+              inputId = "07", # 07 Execução da despesa por ação orçamentária ----
               width_box = 12,
               status = "warning",
-              boxtitle = "Execução da despesa por elemento de despesa",
+              boxtitle = "Por ação orçamentária",
+              menu_selected = c("typeplot", "groupplot", "dimension"),
+              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
+              choices = c(typeplot = "empty", groupplot = "empty"),
+              selected = c(typeplot = "column", groupplot = "empty", dimension = "empty")),
+            boxnew(
+              inputId = "08", # 08 Execução da despesa por elemento de despesa ----
+              width_box = 12,
+              status = "warning",
+              boxtitle = "Por elemento de despesa",
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
               choices = c(typeplot = "empty", groupplot = "empty"),
@@ -140,128 +155,139 @@ ui <-
           tabName = "comparativo", 
           fluidRow(
             boxnew(
-              inputId = "07", # 07 Execução da despesa por unidade gestora ----
+              inputId = "09", # 09 Execução da despesa por unidade gestora ----
               width_box = 7,
               status = "warning",
-              boxtitle = "Execução da despesa por unidade gestora",
+              boxtitle = "Por unidade gestora",
               menu_selected = c("typeplot", "groupplot", "dimension","department"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D", department = "Grupo de unidades"),
               choices = list(typeplot = "empty", groupplot = "empty", department = c("Com Reitoria","Sem Reitoria")),
-              selected = c(typeplot = "column", groupplot = "normal", dimension = "empty", department = "Sem Reitoria")),
+              selected = c(typeplot = "column", groupplot = "empty", dimension = "empty", department = "Sem Reitoria")),
             boxnew(
-              inputId = "08", # 08 Execução da despesa por campi e reitoria ----
+              inputId = "10", # 10 Execução da despesa por campi e reitoria ----
               width_box = 5,
               status = "warning",
-              boxtitle = "Execução da despesa por campi e reitoria",
+              boxtitle = "Por Campi e Reitoria",
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
               choices = list(typeplot = "empty", groupplot = "empty"),
-              selected = c(typeplot = "column", groupplot = "normal", dimension = "empty"))
+              selected = c(typeplot = "column", groupplot = "empty", dimension = "empty")),
+            boxnew(
+              inputId = "11", # 11 Valores pagos por exercício de referência (por UG) ----
+              width_box = 7,
+              status = "warning",
+              boxtitle = "Valores pagos por exercício de referência (UG)",
+              menu_selected = c("typeplot", "groupplot", "dimension","department"),
+              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D", department = "Grupo de unidades"),
+              choices = list(typeplot = "empty", groupplot = "empty", department = c("Com Reitoria","Sem Reitoria")),
+              selected = c(typeplot = "column", groupplot = "percent", dimension = "empty", department = "Sem Reitoria")),
+            boxnew(
+              inputId = "12", # 12 Valores pagos por exercício de referência (Campi e Reitoria) ----
+              width_box = 5,
+              status = "warning",
+              boxtitle = "Valores pagos por exercício de referência (Campi e Reitoria)",
+              menu_selected = c("typeplot", "groupplot", "dimension"),
+              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
+              choices = list(typeplot = "empty", groupplot = "empty"),
+              selected = c(typeplot = "column", groupplot = "percent", dimension = "empty"))
           )
         ),
         tabItem(
           tabName = "evolucao_pessoal", 
           fluidRow(
             boxnew(
-              inputId = "09", # 09 Evolução do nº de técnicos e docentes por ano ----
+              inputId = "13", # 13 Número de técnicos e docentes por ano ----
               width_box = 6,
               status = "warning",
-              boxtitle = "Evolução do nº de técnicos e docentes por ano",
+              boxtitle = "Número de técnicos e docentes por ano",
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
               choices = list(typeplot = "empty", groupplot = "empty"),
-              selected = c(typeplot = "column", groupplot = "empty", dimension = "empty")),
+              selected = c(typeplot = "spline", groupplot = "empty", dimension = "empty")),
             boxnew(
-              inputId = "10", # 10 Evolução do % de técnicos e docentes por ano ----
+              inputId = "14", # 14 Percentual de técnicos e docentes por ano ----
               width_box = 6,
               status = "warning",
-              boxtitle = "Evolução do % de técnicos e docentes por ano",
+              boxtitle = "Percentual de técnicos e docentes por ano",
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
               choices = list(typeplot = "empty", groupplot = "empty"),
-              selected = c(typeplot = "column", groupplot = "normal", dimension = "empty")),
+              selected = c(typeplot = "column", groupplot = "percent", dimension = "empty")),
             boxnew(
-              inputId = "11", # 11 Evolução do nº de técnicos e docentes por mês ----
+              inputId = "15", # 15 Número de técnicos e docentes por mês ----
               width_box = 12,
               status = "warning",
-              boxtitle = "Evolução do número de cargos por mês",
+              boxtitle = "Número de técnicos e docentes por mês",
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
               choices = list(typeplot = "empty", groupplot = "empty"),
               selected = c(typeplot = "areaspline", groupplot = "empty", dimension = "empty")),
             boxnew(
-              inputId = "23", # 23 Evolução do % de técnicos e docentes por ano ----
+              inputId = "16", # 16 Percentual de técnicos e docentes por mês ----
               width_box = 12,
               status = "warning",
-              boxtitle = "Evolução do % de técnicos e docentes por ano",
+              boxtitle = "Percentual de técnicos e docentes por mês",
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
               choices = list(typeplot = "empty", groupplot = "empty"),
-              selected = c(typeplot = "column", groupplot = "normal", dimension = "empty")))),
+              selected = c(typeplot = "column", groupplot = "percent", dimension = "empty")))),
         tabItem(
           tabName = "categoria_pessoal", 
           fluidRow(
             boxnew(
-              inputId = "12", # 12 Servidores por cargo ----
+              inputId = "17", # 17 Servidores por cargo ----
               width_box = 6,
               status = "warning",
-              boxtitle = "Servidores por cargo",
-              menu_selected = c("typeplot", "groupplot", "dimension"),
-              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
-              choices = list(typeplot = "empty", groupplot = "empty"),
-              selected = c(typeplot = "areaspline", groupplot = "empty", dimension = "empty")),
+              boxtitle = "Servidores por cargo"),
             boxnew(
-              inputId = "13", # 13 Servidores por situação do vínculo ----
+              inputId = "18", # 18 Servidores por situação do vínculo ----
               width_box = 6,
               status = "warning",
-              boxtitle = "Servidores por situação do vínculo",
+              boxtitle = "Servidores por situação do vínculo"),
+            boxnew(
+              inputId = "19", # 19 Jornada de trabalho dos docentes e técnicos ----
+              width_box = 6,
+              status = "warning",
+              boxtitle = "Jornada de trabalho dos docentes e técnicos",
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
-              choices = list(typeplot = "empty", groupplot = "empty"),
-              selected = c(typeplot = "areaspline", groupplot = "empty", dimension = "empty")),
+              choices = list(typeplot = c(`<i class='fa fa-bar-chart'></i>`="column", `<i class='fa fa-align-left'></i>`="bar"), groupplot = "empty"),
+              selected = c(typeplot = "column", groupplot = "empty", dimension = "3D")),
             boxnew(
-              inputId = "16", # 16 Classificação dos cargos técnicos ----
+              inputId = "20", # 20 Classificação dos cargos técnicos ----
               width_box = 6,
               status = "warning",
               boxtitle = "Classificação dos cargos técnicos",
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
               choices = list(typeplot = "empty", groupplot = "empty"),
-              selected = c(typeplot = "areaspline", groupplot = "empty", dimension = "empty")),
+              selected = c(typeplot = "column", groupplot = "normal", dimension = "empty")),
             boxnew(
-              inputId = "17", # 17 Nível de capacitação por classificação dos cargos técnicos ----
+              inputId = "21", # 21 Nível de capacitação por classificação dos cargos técnicos ----
               width_box = 6,
               status = "warning",
               boxtitle = "Nível de capacitação por classificação dos cargos técnicos",
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
-              choices = list(typeplot = "empty", groupplot = "empty"),
-              selected = c(typeplot = "column", groupplot = "normal", dimension = "empty")),
-            boxnew(
-              inputId = "14", # 14 Jornada de trabalho dos docentes e técnicos ----
-              width_box = 6,
-              status = "warning",
-              boxtitle = "Jornada de trabalho dos docentes e técnicos",
-              menu_selected = c("typeplot", "groupplot", "dimension"),
-              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
-              choices = list(typeplot = "empty", groupplot = "empty"),
+              choices = list(typeplot = c(`<i class='fa fa-bar-chart'></i>`="column", `<i class='fa fa-align-left'></i>`="bar"),
+                             groupplot = "empty"),
               selected = c(typeplot = "column", groupplot = "empty", dimension = "3D")),
             boxnew(
-              inputId = "18", # 18 Cargos em comissão e funções gratificadas ocupadas ----
+              inputId = "22", # 22 Cargos em comissão e funções gratificadas ocupadas ----
               width_box = 6,
               status = "warning",
               boxtitle = "Cargos em comissão e funções gratificadas ocupadas",
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
               choices = list(typeplot = "empty", groupplot = "empty"),
-              selected = c(typeplot = "column", groupplot = "empty", dimension = "empty"))
+              selected = c(typeplot = "column", groupplot = "empty", dimension = "3D"))
             )
           ),
         tabItem(
           tabName = "rotatividade", 
           fluidRow(
             boxnew(
-              inputId = "19", # 19 Admissão e desligamento de docentes e técnicos por ano ----
+              inputId = "23", # 23 Admissão e desligamento de docentes e técnicos por ano ----
               width_box = 6,
               status = "warning",
               boxtitle = "Admissão e desligamento de docentes e técnicos por ano",
@@ -270,28 +296,28 @@ ui <-
               choices = list(typeplot = "empty", groupplot = "empty"),
               selected = c(typeplot = "areaspline", groupplot = "empty", dimension = "empty")),
             boxnew(
-              inputId = "20", # 20 Admissão e desligamento de docentes e técnicos por ano e tipo de cargo ----
+              inputId = "24", # 24 Admissão e desligamento de docentes e técnicos por tipo ----
               width_box = 6,
               status = "warning",
-              boxtitle = "Admissão e desligamento de docentes e técnicos por ano e tipo de cargo",
+              boxtitle = "Admissão e desligamento de docentes e técnicos por tipo de cargo",
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
               choices = list(typeplot = "empty", groupplot = "empty"),
               selected = c(typeplot = "spline", groupplot = "empty", dimension = "empty")),
             boxnew(
-              inputId = "21", # 21 Admissão e desligamento de prof. temporários e substitutos por ano ----
+              inputId = "25", # 25 Admissão e desligamento de prof. temporário e substituto por ano ----
               width_box = 6,
               status = "warning",
-              boxtitle = "Admissão e desligamento de prof. temporários e substitutos por ano",
+              boxtitle = "Admissão e desligamento de prof. temporário e substituto por ano",
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
               choices = list(typeplot = "empty", groupplot = "empty"),
               selected = c(typeplot = "areaspline", groupplot = "empty", dimension = "empty")),
             boxnew(
-              inputId = "22", # 22 Admissão e desligamento de prof. temporários e substitutos por ano e vínculo ----
+              inputId = "26", # 26 Admissão e desligamento de prof. temporário e substituto por tipo de contrato ----
               width_box = 6,
               status = "warning",
-              boxtitle = "Admissão e desligamento de prof. temporários e substitutos por ano e vínculo",
+              boxtitle = "Admissão e desligamento de prof. temporário e substituto por tipo de contrato",
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
               choices = list(typeplot = "empty", groupplot = "empty"),
@@ -301,14 +327,16 @@ ui <-
     )
       ),
     rightSidebar( # Barra lateral direita ----
-      background = "dark",
+      background = "dark", 
       rightSidebarTabContent(
+        active = TRUE,
         id = 1,
-        title = "Orçamento", icon = "money",
+        title = "Orçamento", 
+        icon = "money",
         selectInput(
           inputId = "unidade_orcamento", 
           label = "Unidade", 
-          choices = c("IFB",unique(db_siafi[order(db_siafi$SG_UG),]$SG_UG)), 
+          choices = c("IFB", unique(db_siafi[order(db_siafi$SG_UG),]$SG_UG)), 
           selected = "CCEI"),
         selectInput(
           inputId = "exercicio_orcamento",
@@ -321,12 +349,41 @@ ui <-
           choices = list("Despesa Corrente" = unique(db_siafi$CO_GD)[1], 
                          "Despesa de Capital" = unique(db_siafi$CO_GD)[2], 
                          "Pessoal" = unique(db_siafi$CO_GD)[3]),
-          selected = unique(db_siafi$CO_GD)[1:2]),
-        materialSwitch(
-          inputId = "restoapagar",
-          label = "Incluir restos a pagar?",
-          value = FALSE,
-          status = "primary")
+          selected = unique(db_siafi$CO_GD)[1:2])
+        #tags$hr(),
+        # pickerInput(
+        #   inputId = "funcao_orcamento",
+        #   label = "Função",
+        #   choices = paste(unique(db_siafi$CO_FUNCAO), str_to_title(unique(db_siafi$NO_FUNCAO))),
+        #   selected = paste(unique(db_siafi$CO_FUNCAO), str_to_title(unique(db_siafi$NO_FUNCAO))),
+        #   options = list(`actions-box` = TRUE, 
+        #                  `size` = 10, 
+        #                  `selected-text-format` = "count > 3", 
+        #                  `deselect-all-text` = "Nenhum",
+        #                  `select-all-text` = "Todos", `dropdown-align-right` = TRUE),
+        #   multiple = TRUE),
+        # pickerInput(
+        #   inputId = "subfuncao_orcamento",
+        #   label = "Subfunção",
+        #   choices = paste(unique(db_siafi$CO_SUBFUNCAO), str_to_title(unique(db_siafi$NO_SUBFUNCAO))),
+        #   selected = paste(unique(db_siafi$CO_SUBFUNCAO), str_to_title(unique(db_siafi$NO_SUBFUNCAO))),
+        #   options = list(`actions-box` = TRUE, 
+        #                  `size` = 10, 
+        #                  `selected-text-format` = "count > 3", 
+        #                  `deselect-all-text` = "Nenhum",
+        #                  `select-all-text` = "Todos", `dropdown-align-right` = TRUE),
+        #   multiple = TRUE),
+        # pickerInput(
+        #   inputId = "programa_orcamento",
+        #   label = "Programa",
+        #   choices = paste(unique(db_siafi$CO_PROGRAMA), str_to_title(unique(db_siafi$NO_PROGRAMA))),
+        #   selected = paste(unique(db_siafi$CO_PROGRAMA), str_to_title(unique(db_siafi$NO_PROGRAMA))),
+        #   options = list(`actions-box` = TRUE, 
+        #                  `size` = 10, 
+        #                  `selected-text-format` = "count > 3", 
+        #                  `deselect-all-text` = "Nenhum",
+        #                  `select-all-text` = "Todos", `dropdown-align-right` = TRUE),
+        #   multiple = TRUE)
       ),
       rightSidebarTabContent(
         id = 2,
@@ -351,8 +408,7 @@ ui <-
         p("Pompylio Lima"),
         p("This license is valid for educational-institution for the following product(s): Highcharts, Highstock, Highmaps"),
         p("This software is released under Creative Commons Attribution-NonCommercial 3.0, and is available for download at highcharts.com/download. No further activation or license key is required.")
-        
-      )
+        )
     ),title = "Painel CCEI"
   )
 # SHINY SERVER ----------------------------------------------------------------------------------------------------
@@ -360,175 +416,292 @@ server <-
   function(input, output, session) {
 
 # ORÇAMENTO ---------------------------------------------------------------
-    
-    # 01 Evolução da despesa por ano ----
+    # 01 Execução da despesa por ano ----
     dbplot01 <- reactive({
       if (input$unidade_orcamento == "IFB"){
         db <- db_siafi %>%
           filter(CO_GD %in% c(input$grupodespesa)) %>%
           group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG = "IFB") %>%
-          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO","RAP_PAGO","RAP_CANCELADO"), .funs = sum)
+          summarise(SERIE1 = sum(EMPENHADO, na.rm = TRUE),
+                    SERIE2 = sum(LIQUIDADO, na.rm = TRUE),
+                    SERIE3 = sum(PAGO, na.rm = TRUE),
+                    SERIE_RAP = sum(RAP_PAGO, na.rm = TRUE))
         }else{
           ano <- unique(substr(db_siafi[db_siafi$SG_UG == input$unidade_orcamento, ]$LANCAMENTO, 1, 4))
           if (input$unidade_orcamento == "CCEI") ano <- ano[!ano == "2016"]
           db <- db_siafi %>%
             filter(CO_GD %in% c(input$grupodespesa), substr(LANCAMENTO, 1, 4) %in% ano, SG_UG == input$unidade_orcamento) %>%
             group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG) %>%
-            summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO","RAP_PAGO","RAP_CANCELADO"), .funs = sum)
+            summarise(SERIE1 = sum(EMPENHADO, na.rm = TRUE),
+                      SERIE2 = sum(LIQUIDADO, na.rm = TRUE),
+                      SERIE3 = sum(PAGO, na.rm = TRUE),
+                      SERIE_RAP = sum(RAP_PAGO, na.rm = TRUE))
         }
       db
       })
     output$plot01 <- renderHighchart({
-      HighchartOrc(data = dbplot01(), 
-                   subtitle = unique(dbplot01()$SG_UG),
-                   categories = unique(dbplot01()$ANO),
-                   input_plot = c( 
-                     rap = input$restoapagar, 
-                     typeplot = input$typeplot01, 
-                     dimension = input$dimension01, 
-                     groupplot = input$groupplot01))
+      highchart_new(data = dbplot01(), 
+                    series = c(SERIE1 = "EMPENHADO", SERIE2 = "LIQUIDADO", SERIE3 = "PAGO", SERIE_RAP = "RAP PAGO"),
+                    subtitle = unique(dbplot01()$SG_UG),
+                    categories = unique(dbplot01()$ANO),
+                    credits = "Portal da Transparência",
+                    input_plot = c(
+                      rap = input$restoapagar, 
+                      typeplot = input$typeplot01, 
+                      dimension = input$dimension01, 
+                      groupplot = input$groupplot01))
     })
-    # 02 Evolução da despesa por mês ----
+    # 02 Valores pagos por exercício de referência ----
     dbplot02 <- reactive({
+      if (input$unidade_orcamento == "IFB"){
+        db <- db_siafi %>%
+          filter(CO_GD %in% c(input$grupodespesa)) %>%
+          group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG = "IFB") %>%
+          summarise(SERIE1 = sum(PAGO, na.rm = TRUE),
+                    SERIE2 = sum(RAP_PAGO, na.rm = TRUE))
+      }else{
+        ano <- unique(substr(db_siafi[db_siafi$SG_UG == input$unidade_orcamento, ]$LANCAMENTO, 1, 4))
+        if (input$unidade_orcamento == "CCEI") ano <- ano[!ano == "2016"]
+        db <- db_siafi %>%
+          filter(CO_GD %in% c(input$grupodespesa), substr(LANCAMENTO, 1, 4) %in% ano, SG_UG == input$unidade_orcamento) %>%
+          group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG) %>%
+          summarise(SERIE1 = sum(PAGO, na.rm = TRUE),
+                    SERIE2 = sum(RAP_PAGO, na.rm = TRUE))
+      }
+      db
+    })
+    output$plot02 <- renderHighchart({
+      highchart_new(data = dbplot02(), 
+                    series = c(SERIE1 = "Despesas do exercício", SERIE2 = "Despesas de exercícios anteriores"),
+                    subtitle = unique(dbplot02()$SG_UG),
+                    categories = unique(dbplot02()$ANO),
+                    credits = "Portal da Transparência",
+                    input_plot = c( 
+                      rap = input$restoapagar, 
+                      typeplot = input$typeplot02, 
+                      dimension = input$dimension02, 
+                      groupplot = input$groupplot02))
+    })
+    # 03 Execução da despesa por mês (acumulado) ----
+    dbplot03 <- reactive({
       if (input$unidade_orcamento == "IFB") {
         db <- db_siafi %>%
           filter(CO_GD %in% c(input$grupodespesa), substr(LANCAMENTO, 1, 4) == input$exercicio_orcamento) %>%
           group_by(LANCAMENTO, SG_UG = "IFB") %>%
-          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO","RAP_PAGO","RAP_CANCELADO"),.funs = sum)
-        db$EMPENHADO <- cumsum(db$EMPENHADO)
-        db$LIQUIDADO <- cumsum(db$LIQUIDADO)
-        db$PAGO <- cumsum(db$PAGO)
-        db$RAP_PAGO <- cumsum(db$RAP_PAGO)
-        db$RAP_CANCELADO <- cumsum(db$RAP_CANCELADO)
+          summarise(SERIE1 = sum(EMPENHADO, na.rm = TRUE),
+                    SERIE2 = sum(LIQUIDADO, na.rm = TRUE),
+                    SERIE3 = sum(PAGO, na.rm = TRUE),
+                    SERIE_RAP = sum(RAP_PAGO, na.rm = TRUE))
+        db$SERIE1 <- cumsum(db$SERIE1)
+        db$SERIE2 <- cumsum(db$SERIE2)
+        db$SERIE3 <- cumsum(db$SERIE3)
+        db$SERIE_RAP <- cumsum(db$SERIE_RAP)
         } else {
         db <- db_siafi %>%
           filter(CO_GD %in% input$grupodespesa, substr(LANCAMENTO, 1, 4) == input$exercicio_orcamento, SG_UG == input$unidade_orcamento) %>%
           group_by(LANCAMENTO, SG_UG) %>%
-          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO","RAP_PAGO","RAP_CANCELADO"),.funs = sum)
-        db$EMPENHADO <- cumsum(db$EMPENHADO)
-        db$LIQUIDADO <- cumsum(db$LIQUIDADO)
-        db$PAGO <- cumsum(db$PAGO)
-        db$RAP_PAGO <- cumsum(db$RAP_PAGO)
-        db$RAP_CANCELADO <- cumsum(db$RAP_CANCELADO)
+          summarise(SERIE1 = sum(EMPENHADO, na.rm = TRUE),
+                    SERIE2 = sum(LIQUIDADO, na.rm = TRUE),
+                    SERIE3 = sum(PAGO, na.rm = TRUE),
+                    SERIE_RAP = sum(RAP_PAGO, na.rm = TRUE))
+        db$SERIE1 <- cumsum(db$SERIE1)
+        db$SERIE2 <- cumsum(db$SERIE2)
+        db$SERIE3 <- cumsum(db$SERIE3)
+        db$SERIE_RAP <- cumsum(db$SERIE_RAP)
         }
       db
     })
-    output$plot02 <- renderHighchart({
-      HighchartOrc(data = dbplot02(), 
-                   subtitle = unique(paste(dbplot02()$SG_UG, substr(dbplot02()$LANCAMENTO, 1, 4))),
-                   categories = dbplot02()$LANCAMENTO,
-                   input_plot = c( 
-                     rap = input$restoapagar, 
-                     typeplot = input$typeplot02, 
-                     dimension = input$dimension02, 
-                     groupplot = input$groupplot02))
-    })
-    # 03 Evolução da despesa por mês acumulado ----
-    dbplot03 <- reactive({
-      if (input$unidade_orcamento == "IFB") {
-        db <- db_siafi %>%
-          filter(CO_GD %in% input$grupodespesa, substr(LANCAMENTO, 1, 4) == input$exercicio_orcamento) %>%
-          group_by(LANCAMENTO, SG_UG = "IFB") %>%
-          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO","RAP_PAGO","RAP_CANCELADO"),.funs = sum)
-        } else{
-        db <- db_siafi %>%
-          filter(CO_GD %in% input$grupodespesa,substr(LANCAMENTO, 1, 4) == input$exercicio_orcamento,SG_UG == input$unidade_orcamento) %>%
-          group_by(LANCAMENTO, SG_UG) %>%
-          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO","RAP_PAGO","RAP_CANCELADO"),.funs = sum)
-      }
-      db
-    })
     output$plot03 <- renderHighchart({
-      HighchartOrc(data = dbplot03(), 
-                   subtitle = unique(dbplot03()$SG_UG),
-                   categories = dbplot03()$LANCAMENTO,
-                   input_plot = c( 
-                     rap = input$restoapagar, 
-                     typeplot = input$typeplot03, 
-                     dimension = input$dimension03, 
-                     groupplot = input$groupplot03))
+      highchart_new(data = dbplot03(),  
+                    series = c(SERIE1 = "EMPENHADO", SERIE2 = "LIQUIDADO", SERIE3 = "PAGO", SERIE_RAP = "RAP PAGO"),
+                    subtitle = unique(paste(dbplot03()$SG_UG, substr(dbplot03()$LANCAMENTO, 1, 4))),
+                    categories = dbplot03()$LANCAMENTO,
+                    credits = "Portal da Transparência",
+                    input_plot = c( 
+                      rap = input$restoapagar, 
+                      typeplot = input$typeplot03, 
+                      dimension = input$dimension03, 
+                      groupplot = input$groupplot03))
     })
-    # 04 Execução da despesa por grupo de despesa ----
+    # 04 Execução da despesa por mês (não acumulado) ----
     dbplot04 <- reactive({
       if (input$unidade_orcamento == "IFB") {
         db <- db_siafi %>%
           filter(CO_GD %in% input$grupodespesa, substr(LANCAMENTO, 1, 4) == input$exercicio_orcamento) %>%
-          group_by(ANO = substr(LANCAMENTO, 1, 4), CO_GD, SG_UG = "IFB",NO_GD) %>%
-          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO","RAP_PAGO","RAP_CANCELADO"),.funs = sum)
-      } else{
+          group_by(LANCAMENTO, SG_UG = "IFB") %>%
+          summarise(SERIE1 = sum(EMPENHADO, na.rm = TRUE),
+                    SERIE2 = sum(LIQUIDADO, na.rm = TRUE),
+                    SERIE3 = sum(PAGO, na.rm = TRUE),
+                    SERIE_RAP = sum(RAP_PAGO, na.rm = TRUE))
+        } else{
         db <- db_siafi %>%
           filter(CO_GD %in% input$grupodespesa,substr(LANCAMENTO, 1, 4) == input$exercicio_orcamento,SG_UG == input$unidade_orcamento) %>%
-          group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG, CO_GD, NO_GD) %>%
-          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO","RAP_PAGO","RAP_CANCELADO"),.funs = sum)
+          group_by(LANCAMENTO, SG_UG) %>%
+          summarise(SERIE1 = sum(EMPENHADO, na.rm = TRUE),
+                    SERIE2 = sum(LIQUIDADO, na.rm = TRUE),
+                    SERIE3 = sum(PAGO, na.rm = TRUE),
+                    SERIE_RAP = sum(RAP_PAGO, na.rm = TRUE))
       }
       db
     })
     output$plot04 <- renderHighchart({
-      HighchartOrc(data = dbplot04(), 
-                   subtitle = paste(unique(dbplot04()$SG_UG), unique(dbplot04()$ANO)),
-                   categories = dbplot04()$NO_GD,
+      highchart_new(data = dbplot04(),  
+                   series = c(SERIE1 = "EMPENHADO", SERIE2 = "LIQUIDADO", SERIE3 = "PAGO", SERIE_RAP = "RAP PAGO"),
+                   subtitle = unique(dbplot04()$SG_UG),
+                   categories = dbplot04()$LANCAMENTO,
+                   credits = "Portal da Transparência",
                    input_plot = c( 
                      rap = input$restoapagar, 
                      typeplot = input$typeplot04, 
                      dimension = input$dimension04, 
                      groupplot = input$groupplot04))
     })
-    # 05 Execução da despesa por ação orçamentária ----
+    # 05 Execução da despesa por grupo de despesa ----
     dbplot05 <- reactive({
-      db <- db_siafi %>% left_join(tb_siafi_acao, by = "CO_ACAO")
       if (input$unidade_orcamento == "IFB") {
-        db <- db %>%
+        db <- db_siafi %>%
           filter(CO_GD %in% input$grupodespesa, substr(LANCAMENTO, 1, 4) == input$exercicio_orcamento) %>%
-          group_by(ANO = substr(LANCAMENTO, 1, 4),CO_GD, SG_UG = "IFB", NO_ACAO_RESUMO) %>%
-          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO", "RAP_PAGO", "RAP_CANCELADO"), .funs = sum)
+          group_by(ANO = substr(LANCAMENTO, 1, 4), CO_GD, SG_UG = "IFB", NO_GD) %>%
+          summarise(SERIE1 = sum(EMPENHADO, na.rm = TRUE),
+                    SERIE2 = sum(LIQUIDADO, na.rm = TRUE),
+                    SERIE3 = sum(PAGO, na.rm = TRUE),
+                    SERIE_RAP = sum(RAP_PAGO, na.rm = TRUE))
       } else{
-        db <- db %>%
-          filter(CO_GD %in% input$grupodespesa, substr(LANCAMENTO, 1, 4) == input$exercicio_orcamento, SG_UG == input$unidade_orcamento
-          ) %>%
-          group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG, CO_ACAO, NO_ACAO_RESUMO) %>%
-          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO", "RAP_PAGO", "RAP_CANCELADO"), .funs = sum)
+        db <- db_siafi %>%
+          filter(CO_GD %in% input$grupodespesa,substr(LANCAMENTO, 1, 4) == input$exercicio_orcamento, SG_UG == input$unidade_orcamento) %>%
+          group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG, CO_GD, NO_GD) %>%
+          summarise(SERIE1 = sum(EMPENHADO, na.rm = TRUE),
+                    SERIE2 = sum(LIQUIDADO, na.rm = TRUE),
+                    SERIE3 = sum(PAGO, na.rm = TRUE),
+                    SERIE_RAP = sum(RAP_PAGO, na.rm = TRUE))
       }
+      db$NO_GD <- str_to_title(db$NO_GD)
       db
     })
     output$plot05 <- renderHighchart({
-      HighchartOrc(data = dbplot05(), 
+      highchart_new(data = dbplot05(),  
+                    series = c(SERIE1 = "EMPENHADO", SERIE2 = "LIQUIDADO", SERIE3 = "PAGO", SERIE_RAP = "RAP PAGO"),
                    subtitle = paste(unique(dbplot05()$SG_UG), unique(dbplot05()$ANO)),
-                   categories = dbplot05()$NO_ACAO_RESUMO,
+                   categories = dbplot05()$NO_GD,
+                   credits = "Portal da Transparência",
                    input_plot = c( 
                      rap = input$restoapagar, 
                      typeplot = input$typeplot05, 
                      dimension = input$dimension05, 
                      groupplot = input$groupplot05))
     })
-    # 06 Execução da despesa por elemento da despesa ----
+    # 06 Execução da despesa por programa ----
     dbplot06 <- reactive({
+      db <- db_siafi %>% left_join(tb_siafi_programa, by = "CO_PROGRAMA")
       if (input$unidade_orcamento == "IFB") {
-        db <- db_siafi %>%
-          filter(CO_GD %in% input$grupodespesa, substr(LANCAMENTO, 1, 4) == input$exercicio_orcamento) %>%
-          group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG = "IFB", NO_ED) %>%
-          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO", "RAP_PAGO", "RAP_CANCELADO"), .funs = sum)
+        db <- db %>%
+          filter(substr(LANCAMENTO, 1, 4) == input$exercicio_orcamento) %>%
+          group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG = "IFB", PROGRAMA = paste(CO_PROGRAMA, NO_PROGRAMA_RESUMO)) %>%
+          summarise(SERIE1 = sum(EMPENHADO, na.rm = TRUE),
+                    SERIE2 = sum(LIQUIDADO, na.rm = TRUE),
+                    SERIE3 = sum(PAGO, na.rm = TRUE),
+                    SERIE_RAP = sum(RAP_PAGO, na.rm = TRUE))
       } else{
-        db <- db_siafi %>%
-          filter(CO_GD %in% input$grupodespesa, substr(LANCAMENTO, 1, 4) == input$exercicio_orcamento, SG_UG == input$unidade_orcamento) %>%
-          group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG, NO_ED) %>%
-          summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO", "RAP_PAGO", "RAP_CANCELADO"), .funs = sum)
+        db <- db %>%
+          filter(substr(LANCAMENTO, 1, 4) == input$exercicio_orcamento, SG_UG == input$unidade_orcamento) %>%
+          group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG, PROGRAMA = paste(CO_PROGRAMA, NO_PROGRAMA_RESUMO)) %>%
+          summarise(SERIE1 = sum(EMPENHADO, na.rm = TRUE),
+                    SERIE2 = sum(LIQUIDADO, na.rm = TRUE),
+                    SERIE3 = sum(PAGO, na.rm = TRUE),
+                    SERIE_RAP = sum(RAP_PAGO, na.rm = TRUE))
       }
+      db$PROGRAMA <- str_to_title(db$PROGRAMA)
       db
     })
     output$plot06 <- renderHighchart({
-      HighchartOrc(data = dbplot06(), 
+      highchart_new(data = dbplot06(),  
+                    series = c(SERIE1 = "EMPENHADO", SERIE2 = "LIQUIDADO", SERIE3 = "PAGO", SERIE_RAP = "RAP PAGO"),
                    subtitle = paste(unique(dbplot06()$SG_UG), unique(dbplot06()$ANO)),
-                   categories = dbplot06()$NO_ED,
+                   categories = dbplot06()$PROGRAMA,
+                   credits = "Portal da Transparência",
                    input_plot = c( 
                      rap = input$restoapagar, 
                      typeplot = input$typeplot06, 
                      dimension = input$dimension06, 
                      groupplot = input$groupplot06))
     })
-    
-    # 07 Execução da despesa por unidade gestora ----
+    # 07 Execução da despesa por ação orçamentária ----
     dbplot07 <- reactive({
-      if(input$department07 == "Sem Reitoria") {
+      db <- db_siafi %>% left_join(tb_siafi_acao, by = "CO_ACAO")
+      if (input$unidade_orcamento == "IFB") {
+        db <- db %>%
+          filter(
+            CO_GD %in% input$grupodespesa, 
+            substr(LANCAMENTO, 1, 4) == input$exercicio_orcamento) %>%
+          group_by(ANO = substr(LANCAMENTO, 1, 4),CO_GD, SG_UG = "IFB", NO_ACAO_RESUMO) %>%
+          summarise(SERIE1 = sum(EMPENHADO, na.rm = TRUE),
+                    SERIE2 = sum(LIQUIDADO, na.rm = TRUE),
+                    SERIE3 = sum(PAGO, na.rm = TRUE),
+                    SERIE_RAP = sum(RAP_PAGO, na.rm = TRUE))
+      } else{
+        db <- db %>%
+          filter(
+            CO_GD %in% input$grupodespesa, 
+            substr(LANCAMENTO, 1, 4) == input$exercicio_orcamento, 
+            SG_UG == input$unidade_orcamento) %>%
+          group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG, CO_ACAO, NO_ACAO_RESUMO) %>%
+          summarise(SERIE1 = sum(EMPENHADO, na.rm = TRUE),
+                    SERIE2 = sum(LIQUIDADO, na.rm = TRUE),
+                    SERIE3 = sum(PAGO, na.rm = TRUE),
+                    SERIE_RAP = sum(RAP_PAGO, na.rm = TRUE))
+      }
+      db
+    })
+    output$plot07 <- renderHighchart({
+      highchart_new(data = dbplot07(),  
+                    series = c(SERIE1 = "EMPENHADO", SERIE2 = "LIQUIDADO", SERIE3 = "PAGO", SERIE_RAP = "RAP PAGO"),
+                   subtitle = paste(unique(dbplot07()$SG_UG), unique(dbplot07()$ANO)),
+                   categories = dbplot07()$NO_ACAO_RESUMO,
+                   credits = "Portal da Transparência",
+                   input_plot = c( 
+                     rap = input$restoapagar, 
+                     typeplot = input$typeplot07, 
+                     dimension = input$dimension07, 
+                     groupplot = input$groupplot07))
+    })
+    # 08 Execução da despesa por elemento da despesa ----
+    dbplot08 <- reactive({
+      if (input$unidade_orcamento == "IFB") {
+        db <- db_siafi %>%
+          filter(CO_GD %in% input$grupodespesa, substr(LANCAMENTO, 1, 4) == input$exercicio_orcamento) %>%
+          group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG = "IFB", NO_ED) %>%
+          summarise(SERIE1 = sum(EMPENHADO, na.rm = TRUE),
+                    SERIE2 = sum(LIQUIDADO, na.rm = TRUE),
+                    SERIE3 = sum(PAGO, na.rm = TRUE),
+                    SERIE_RAP = sum(RAP_PAGO, na.rm = TRUE))
+      } else{
+        db <- db_siafi %>%
+          filter(CO_GD %in% input$grupodespesa, substr(LANCAMENTO, 1, 4) == input$exercicio_orcamento, SG_UG == input$unidade_orcamento) %>%
+          group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG, NO_ED) %>%
+          summarise(SERIE1 = sum(EMPENHADO, na.rm = TRUE),
+                    SERIE2 = sum(LIQUIDADO, na.rm = TRUE),
+                    SERIE3 = sum(PAGO, na.rm = TRUE),
+                    SERIE_RAP = sum(RAP_PAGO, na.rm = TRUE))
+      }
+      db$NO_ED <- str_to_title(db$NO_ED)
+      db
+    })
+    output$plot08 <- renderHighchart({
+      highchart_new(data = dbplot08(),  
+                    series = c(SERIE1 = "EMPENHADO", SERIE2 = "LIQUIDADO", SERIE3 = "PAGO", SERIE_RAP = "RAP PAGO"),
+                   subtitle = paste(unique(dbplot08()$SG_UG), unique(dbplot08()$ANO)),
+                   categories = dbplot08()$NO_ED,
+                   credits = "Portal da Transparência",
+                   input_plot = c( 
+                     rap = input$restoapagar, 
+                     typeplot = input$typeplot08, 
+                     dimension = input$dimension08, 
+                     groupplot = input$groupplot08))
+    })
+    
+    # 09 Execução da despesa por unidade gestora ----
+    dbplot09 <- reactive({
+      if(input$department09 == "Sem Reitoria") {
         ug <- unique(db_siafi[!db_siafi$SG_UG == "REITORIA", ]$SG_UG)
       } else{
         ug <- unique(db_siafi$SG_UG)
@@ -536,267 +709,283 @@ server <-
       db <- db_siafi %>%
         filter(CO_GD %in% input$grupodespesa, substr(LANCAMENTO, 1, 4) == input$exercicio_orcamento, SG_UG %in% ug) %>%
         group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG) %>%
-        summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO", "RAP_PAGO", "RAP_CANCELADO"), .funs = sum
-        )
+        summarise(SERIE1 = sum(EMPENHADO, na.rm = TRUE),
+                  SERIE2 = sum(LIQUIDADO, na.rm = TRUE),
+                  SERIE3 = sum(PAGO, na.rm = TRUE),
+                  SERIE_RAP = sum(RAP_PAGO, na.rm = TRUE))
     })
-    output$plot07 <- renderHighchart({
-      HighchartOrc(data = dbplot07(), 
-                   subtitle = paste(input$unidade_orcamento, unique(dbplot07()$ANO)),
-                   categories = dbplot07()$SG_UG,
+    output$plot09 <- renderHighchart({
+      highchart_new(data = dbplot09(),  
+                    series = c(SERIE1 = "EMPENHADO", SERIE2 = "LIQUIDADO", SERIE3 = "PAGO", SERIE_RAP = "RAP PAGO"),
+                   subtitle = paste(input$unidade_orcamento, unique(dbplot09()$ANO)),
+                   categories = dbplot09()$SG_UG,
+                   credits = "Portal da Transparência",
                    input_plot = c( 
                      rap = input$restoapagar, 
-                     typeplot = input$typeplot07, 
-                     dimension = input$dimension07, 
-                     groupplot = input$groupplot07))
+                     typeplot = input$typeplot09, 
+                     dimension = input$dimension09, 
+                     groupplot = input$groupplot09))
     })
-    # 08 Execução da despesa campi e reitoria ----
-    dbplot08 <- reactive({
+    # 10 Execução da despesa por campi e reitoria ----
+    dbplot10 <- reactive({
       db <- db_siafi %>%
         filter(CO_GD %in% input$grupodespesa,
                substr(LANCAMENTO, 1, 4) == input$exercicio_orcamento,
                SG_UG == "REITORIA") %>%
         group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG) %>%
-        summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO", "RAP_PAGO", "RAP_CANCELADO"),
-                     .funs = sum)
+        summarise(SERIE1 = sum(EMPENHADO, na.rm = TRUE),
+                  SERIE2 = sum(LIQUIDADO, na.rm = TRUE),
+                  SERIE3 = sum(PAGO, na.rm = TRUE),
+                  SERIE_RAP = sum(RAP_PAGO, na.rm = TRUE))
       db1 <- db_siafi %>%
         filter(CO_GD %in% input$grupodespesa,
                substr(LANCAMENTO, 1, 4) == input$exercicio_orcamento,
                !SG_UG == "REITORIA") %>%
         group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG = "CAMPI") %>%
-        summarise_at(.vars = c("EMPENHADO", "LIQUIDADO", "PAGO", "RAP_PAGO", "RAP_CANCELADO"),
-                     .funs = sum)
+        summarise(SERIE1 = sum(EMPENHADO, na.rm = TRUE),
+                  SERIE2 = sum(LIQUIDADO, na.rm = TRUE),
+                  SERIE3 = sum(PAGO, na.rm = TRUE),
+                  SERIE_RAP = sum(RAP_PAGO, na.rm = TRUE))
       db <- bind_rows(db, db1)
       db
     })
-    output$plot08 <- renderHighchart({
-      HighchartOrc(data = dbplot08(), 
-                   subtitle = unique(dbplot08()$ANO),
-                   categories = dbplot08()$SG_UG,
+    output$plot10 <- renderHighchart({
+      highchart_new(data = dbplot10(),  
+                    series = c(SERIE1 = "EMPENHADO", SERIE2 = "LIQUIDADO", SERIE3 = "PAGO", SERIE_RAP = "RAP PAGO"),
+                   subtitle = unique(dbplot10()$ANO),
+                   categories = dbplot10()$SG_UG,
+                   credits = "Portal da Transparência",
                    input_plot = c( 
                      rap = input$restoapagar, 
-                     typeplot = input$typeplot08, 
-                     dimension = input$dimension08, 
-                     groupplot = input$groupplot08))
+                     typeplot = input$typeplot10, 
+                     dimension = input$dimension10, 
+                     groupplot = input$groupplot10))
+    })
+    # 11 Pagamento no exercício e de exercícios anteriores (RAP) ----
+    dbplot11 <- reactive({
+      if(input$department11 == "Sem Reitoria") {
+        ug <- unique(db_siafi[!db_siafi$SG_UG == "REITORIA", ]$SG_UG)
+      } else{
+        ug <- unique(db_siafi$SG_UG)
+      }
+      db <- db_siafi %>%
+        filter(CO_GD %in% input$grupodespesa, substr(LANCAMENTO, 1, 4) == input$exercicio_orcamento, SG_UG %in% ug) %>%
+        group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG) %>%
+        summarise(SERIE1 = sum(PAGO, na.rm = TRUE),
+                  SERIE2 = sum(RAP_PAGO, na.rm = TRUE))
+      db
+    })
+    output$plot11 <- renderHighchart({
+      highchart_new(data = dbplot11(),  
+                    series = c(SERIE1 = "Despesas do exercício", SERIE2 = "Despesas de exercícios anteriores"),
+                   subtitle = paste(input$unidade_orcamento, unique(dbplot11()$ANO)),
+                   categories = dbplot11()$SG_UG,
+                   credits = "Portal da Transparência",
+                   input_plot = c( 
+                     rap = input$restoapagar, 
+                     typeplot = input$typeplot11, 
+                     dimension = input$dimension11, 
+                     groupplot = input$groupplot11))
+    })
+    # 12 Pagamento no exercício e de exercícios anteriores (Campi e Reitoria) ----
+    dbplot12 <- reactive({
+      db <- db_siafi %>%
+        filter(CO_GD %in% input$grupodespesa,
+               substr(LANCAMENTO, 1, 4) == input$exercicio_orcamento,
+               SG_UG == "REITORIA") %>%
+        group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG) %>%
+        summarise(SERIE1 = sum(PAGO, na.rm = TRUE),
+                  SERIE2 = sum(RAP_PAGO, na.rm = TRUE))
+      db1 <- db_siafi %>%
+        filter(CO_GD %in% input$grupodespesa,
+               substr(LANCAMENTO, 1, 4) == input$exercicio_orcamento,
+               !SG_UG == "REITORIA") %>%
+        group_by(ANO = substr(LANCAMENTO, 1, 4), SG_UG = "CAMPI") %>%
+        summarise(SERIE1 = sum(PAGO, na.rm = TRUE),
+                  SERIE2 = sum(RAP_PAGO, na.rm = TRUE))
+      db <- bind_rows(db, db1)
+      db
+    })
+    output$plot12 <- renderHighchart({
+      highchart_new(data = dbplot12(),  
+                    series = c(SERIE1 = "Despesas do exercício", SERIE2 = "Despesas de exercícios anteriores"),
+                   subtitle = unique(dbplot12()$ANO),
+                   categories = dbplot12()$SG_UG,
+                   credits = "Portal da Transparência",
+                   input_plot = c( 
+                     rap = input$restoapagar, 
+                     typeplot = input$typeplot12, 
+                     dimension = input$dimension12, 
+                     groupplot = input$groupplot12))
     })
 
 # PESSOAL -----------------------------------------------------------------
-    # 09 Evolução do número de cargos por ano ----
-    dbplot09 <- reactive({
+    # 13 Número de técnicos e docentes por ano ----
+    dbplot13 <- reactive({
       last <- max(sp_quadro$REFERENCIA)
       if (input$unidade_pessoal == "IFB"){
         db <- sp_quadro %>% 
           filter(REFERENCIA == last | grepl("*12$", REFERENCIA)) %>% 
           group_by(REFERENCIA, UORG_LOTACAO_GRUPO = "IFB") %>% 
-          summarise_at(.vars = c("DOCENTE", "TECNICO", "TOTAL"), .funs = sum)
+          summarise(SERIE1 = sum(TOTAL, na.rm = TRUE),
+                    SERIE2 = sum(DOCENTE, na.rm = TRUE),
+                    SERIE3 = sum(TECNICO, na.rm = TRUE))
       } else {
         db <- sp_quadro %>% 
           filter(UORG_LOTACAO_GRUPO == input$unidade_pessoal, REFERENCIA == last | grepl("*12$", REFERENCIA)) %>% 
           group_by(REFERENCIA, UORG_LOTACAO_GRUPO) %>% 
-          summarise_at(.vars = c("DOCENTE", "TECNICO", "TOTAL"), .funs = sum)
+          summarise(SERIE1 = sum(TOTAL, na.rm = TRUE),
+                    SERIE2 = sum(DOCENTE, na.rm = TRUE),
+                    SERIE3 = sum(TECNICO, na.rm = TRUE))
       }
       db$REFERENCIA <- substr(db$REFERENCIA, 1, 4)
       db
     })
-    output$plot09 <- renderHighchart({
-      hc <- highchart() %>%
-        hc_title(text = "") %>%
-        hc_subtitle(text = unique(dbplot09()$UORG_LOTACAO_GRUPO)) %>%
-        hc_yAxis(title = list(text = "")) %>%
-        hc_xAxis(title = list(text = ""), categories = dbplot09()$REFERENCIA) %>%
-        hc_exporting(enabled = TRUE) %>% 
-        hc_chart(type = input$typeplot09) %>% 
-        hc_add_series(name = "TOTAL", data = dbplot09()$TOTAL) %>%
-        hc_add_series(name = "DOCENTES", data = dbplot09()$DOCENTE) %>%
-        hc_add_series(name = "TECNICOS", data = dbplot09()$TECNICO)
-      if(input$dimension09 == TRUE){
-        hc <- hc %>% 
-          hc_chart(options3d = list(enabled = input$dimension09, beta = 10, alpha = 10))
-      }
-      if (input$groupplot09 != FALSE) {
-        hc <- hc %>% 
-          hc_plotOptions(series = list(stacking = input$groupplot09))
-      }
-      hc
+    output$plot13 <- renderHighchart({
+      highchart_new(data = dbplot13(),  
+                   series = c(SERIE1 = "TOTAL",SERIE2 = "DOCENTE", SERIE3 = "TECNICO"),
+                   subtitle = unique(dbplot13()$UORG_LOTACAO_GRUPO),
+                   categories = dbplot13()$REFERENCIA,
+                   credits = "Portal da Transparência",
+                   input_plot = c( 
+                     rap = input$restoapagar, 
+                     typeplot = input$typeplot13, 
+                     dimension = input$dimension13, 
+                     groupplot = input$groupplot13))
     })
-    # 10 Evolução do percentual de técnicos e docentes por ano ----
-    dbplot10 <- reactive({
+    # 14 Percentual de técnicos e docentes por ano ----
+    dbplot14 <- reactive({
       last <- max(sp_quadro$REFERENCIA)
       if (input$unidade_pessoal == "IFB"){
         db <- sp_quadro %>% 
           filter(REFERENCIA == last | grepl("*12$", REFERENCIA)) %>% 
           group_by(REFERENCIA, UORG_LOTACAO_GRUPO = "IFB") %>% 
-          summarise_at(.vars = c("DOCENTE", "TECNICO", "TOTAL"), .funs = sum)
-        db$DOCENTE <- (db$DOCENTE/db$TOTAL)*100
-        db$TECNICO <- (db$TECNICO/db$TOTAL)*100
+          summarise(SERIE1 = sum(DOCENTE, na.rm = TRUE),
+                    SERIE2 = sum(TECNICO, na.rm = TRUE))
       } else {
         db <- sp_quadro %>% 
           filter(UORG_LOTACAO_GRUPO == input$unidade_pessoal, REFERENCIA == last | grepl("*12$", REFERENCIA)) %>% 
           group_by(REFERENCIA, UORG_LOTACAO_GRUPO) %>% 
-          summarise_at(.vars = c("DOCENTE", "TECNICO", "TOTAL"), .funs = sum)
-        db$DOCENTE <- (db$DOCENTE/db$TOTAL)*100
-        db$TECNICO <- (db$TECNICO/db$TOTAL)*100
+          summarise(SERIE1 = sum(DOCENTE, na.rm = TRUE),
+                    SERIE2 = sum(TECNICO, na.rm = TRUE))
       }
       db$REFERENCIA <- substr(db$REFERENCIA, 1, 4)
       db
     })
-    output$plot10 <- renderHighchart({
-      hc <- highchart() %>%
-        hc_title(text = "") %>%
-        hc_subtitle(text = unique(dbplot10()$UORG_LOTACAO_GRUPO)) %>%
-        hc_yAxis(title = list(text = "")) %>%
-        hc_xAxis(title = list(text = ""), categories = dbplot10()$REFERENCIA) %>%
-        hc_exporting(enabled = TRUE) %>% 
-        hc_chart(type = input$typeplot10) %>% 
-        hc_add_series(name = "DOCENTES", data = dbplot10()$DOCENTE) %>%
-        hc_add_series(name = "TECNICOS", data = dbplot10()$TECNICO)
-      if(input$dimension10 == TRUE){
-        hc <- hc %>% 
-          hc_chart(options3d = list(enabled = input$dimension10, beta = 10, alpha = 10))
-      }
-      if (input$groupplot10 != FALSE) {
-        hc <- hc %>% 
-          hc_plotOptions(series = list(stacking = input$groupplot10))
-      }
-      hc
+    output$plot14 <- renderHighchart({
+      highchart_new(data = dbplot14(),  
+                    series = c(SERIE1 = "DOCENTE",SERIE2 = "TECNICO"),
+                   subtitle = unique(dbplot14()$UORG_LOTACAO_GRUPO),
+                   categories = dbplot14()$REFERENCIA,
+                   credits = "Portal da Transparência",
+                   input_plot = c( 
+                     rap = input$restoapagar, 
+                     typeplot = input$typeplot14, 
+                     dimension = input$dimension14, 
+                     groupplot = input$groupplot14))
     })
-    # 11 Evolução do número de cargos por mês ----
-    dbplot11 <- reactive({
+    # 15 Múmero de técnicos e docentes por mês ----
+    dbplot15 <- reactive({
       if (input$unidade_pessoal == "IFB"){
         db <- sp_quadro %>% 
           group_by(REFERENCIA, UORG_LOTACAO_GRUPO = "IFB") %>% 
-          summarise_at(.vars = c("DOCENTE", "TECNICO", "TOTAL"), .funs = sum)
+          summarise(SERIE1 = sum(TOTAL, na.rm = TRUE),
+                    SERIE2 = sum(DOCENTE, na.rm = TRUE),
+                    SERIE3 = sum(TECNICO, na.rm = TRUE))
       } else {
         db <- sp_quadro %>% 
           filter(UORG_LOTACAO_GRUPO == input$unidade_pessoal) %>% 
           group_by(REFERENCIA, UORG_LOTACAO_GRUPO) %>% 
-          summarise_at(.vars = c("DOCENTE", "TECNICO", "TOTAL"), .funs = sum)
+          summarise(SERIE1 = sum(TOTAL, na.rm = TRUE),
+                    SERIE2 = sum(DOCENTE, na.rm = TRUE),
+                    SERIE3 = sum(TECNICO, na.rm = TRUE))
       }
       db
     })
-    output$plot11 <- renderHighchart({
-      hc <- highchart() %>%
-        hc_title(text = "") %>%
-        hc_subtitle(text = unique(dbplot11()$UORG_LOTACAO_GRUPO)) %>%
-        hc_yAxis(title = list(text = "")) %>%
-        hc_xAxis(title = list(text = ""), categories = dbplot11()$REFERENCIA) %>%
-        hc_exporting(enabled = TRUE) %>% 
-        hc_chart(type = input$typeplot11) %>% 
-        hc_add_series(name = "TOTAL", data = dbplot11()$TOTAL) %>%
-        hc_add_series(name = "DOCENTES", data = dbplot11()$DOCENTE) %>%
-        hc_add_series(name = "TECNICOS", data = dbplot11()$TECNICO)
-      if(input$dimension11 == TRUE){
-        hc <- hc %>% 
-          hc_chart(options3d = list(enabled = input$dimension11, beta = 10, alpha = 10))
-      }
-      if (input$groupplot11 != FALSE) {
-        hc <- hc %>% 
-          hc_plotOptions(series = list(stacking = input$groupplot11))
-      }
-      hc
+    output$plot15 <- renderHighchart({
+      highchart_new(data = dbplot15(),  
+                    series = c(SERIE1 = "TOTAL",SERIE2 = "DOCENTE", SERIE3 = "TECNICO"),
+                   subtitle = unique(dbplot15()$UORG_LOTACAO_GRUPO),
+                   categories = dbplot15()$REFERENCIA,
+                   credits = "Portal da Transparência",
+                   input_plot = c( 
+                     rap = input$restoapagar, 
+                     typeplot = input$typeplot15, 
+                     dimension = input$dimension15, 
+                     groupplot = input$groupplot15))
     })
-    # 23 Evolução do % de técnicos e docentes por mês ----
-    dbplot23 <- reactive({
+    # 16 Percentual de técnicos e docentes por mês ----
+    dbplot16 <- reactive({
       if (input$unidade_pessoal == "IFB"){
         db <- sp_quadro %>% 
           group_by(MES = substr(REFERENCIA, 1, 6), UORG_LOTACAO_GRUPO = "IFB") %>% 
-          summarise_at(.vars = c("DOCENTE", "TECNICO", "TOTAL"), .funs = sum)
-        db$DOCENTE <- (db$DOCENTE/db$TOTAL)*100
-        db$TECNICO <- (db$TECNICO/db$TOTAL)*100
+          summarise(SERIE1 = sum(DOCENTE, na.rm = TRUE),
+                    SERIE2 = sum(TECNICO, na.rm = TRUE))
       } else {
         db <- sp_quadro %>% 
           filter(UORG_LOTACAO_GRUPO == input$unidade_pessoal) %>% 
           group_by(MES = substr(REFERENCIA, 1, 6), UORG_LOTACAO_GRUPO) %>% 
-          summarise_at(.vars = c("DOCENTE", "TECNICO", "TOTAL"), .funs = sum)
-        db$DOCENTE <- (db$DOCENTE/db$TOTAL)*100
-        db$TECNICO <- (db$TECNICO/db$TOTAL)*100
+          summarise(SERIE1 = sum(DOCENTE, na.rm = TRUE),
+                    SERIE2 = sum(TECNICO, na.rm = TRUE))
       }
       db
     })
-    output$plot23 <- renderHighchart({
-      hc <- highchart() %>%
-        hc_title(text = "") %>%
-        hc_subtitle(text = unique(dbplot23()$UORG_LOTACAO_GRUPO)) %>%
-        hc_yAxis(title = list(text = "")) %>%
-        hc_xAxis(title = list(text = ""), categories = dbplot23()$MES) %>%
-        hc_exporting(enabled = TRUE) %>% 
-        hc_chart(type = input$typeplot23) %>% 
-        hc_add_series(name = "DOCENTES", data = dbplot23()$DOCENTE) %>%
-        hc_add_series(name = "TECNICOS", data = dbplot23()$TECNICO)
-      if(input$dimension23 == TRUE){
-        hc <- hc %>% 
-          hc_chart(options3d = list(enabled = input$dimension23, beta = 23, alpha = 23))
-      }
-      if (input$groupplot23 != FALSE) {
-        hc <- hc %>% 
-          hc_plotOptions(series = list(stacking = input$groupplot23))
-      }
-      hc
+    output$plot16 <- renderHighchart({
+      highchart_new(data = dbplot16(),  
+                   series = c(SERIE1 = "DOCENTE", SERIE2 = "TECNICO"),
+                   subtitle = unique(dbplot16()$UORG_LOTACAO_GRUPO),
+                   categories = dbplot16()$MES,
+                   credits = "Portal da Transparência",
+                   input_plot = c( 
+                     rap = input$restoapagar, 
+                     typeplot = input$typeplot16, 
+                     dimension = input$dimension16, 
+                     groupplot = input$groupplot16))
     })
-    # 12 Servidores por cargo ----
-    dbplot12 <- reactive({
+    # 17 Servidores por cargo ----
+    dbplot17 <- reactive({
       if (input$unidade_pessoal == "IFB"){
-        db <- sp_cargo %>% 
+        tm <- sp_cargo %>% 
           filter(REFERENCIA == max(sp_cargo$REFERENCIA)) %>% 
           group_by(DESCRICAO_CARGO) %>% 
-          summarise_at(.vars = "TOTAL", .funs = sum) %>% 
+          summarise(SERIE = sum(TOTAL, na.rm = TRUE)) %>% 
           left_join(tb_siape_cargos, by = "DESCRICAO_CARGO")
-        db$UORG_LOTACAO_GRUPO <- "IFB"
       } else {
-        db <- sp_cargo %>% 
+        tm <- sp_cargo %>% 
           filter(REFERENCIA == max(sp_cargo$REFERENCIA), UORG_LOTACAO_GRUPO == input$unidade_pessoal) %>% 
-          group_by(UORG_LOTACAO_GRUPO, DESCRICAO_CARGO) %>% 
-          summarise_at(.vars = "TOTAL", .funs = sum) %>% 
+          group_by(DESCRICAO_CARGO) %>% 
+          summarise(SERIE = sum(TOTAL, na.rm = TRUE)) %>% 
           left_join(tb_siape_cargos, by = "DESCRICAO_CARGO")
       }
-      db <- db[order(db$TOTAL), ]
-      db
+      tm <- treemap(tm, index = "DESCRICAO_CARGO_SIGLA", vSize = "SERIE", vColor =  "SERIE",
+                    type = "value", palette = c("#19334d", "#264d73", "#336699", "#4080bf"), pdf(file = NULL))
+      tm
     })
-    output$plot12 <- renderHighchart({
-      hc <- highchart() %>%
-        hc_title(text = "") %>%
-        hc_subtitle(text = unique(dbplot12()$UORG_LOTACAO_GRUPO)) %>%
-        hc_yAxis(title = list(text = "")) %>%
-        hc_xAxis(title = list(text = "")) %>% 
-        hc_chart(type = 'pie', options3d = list(enabled = TRUE, alpha = 45)) %>% 
-        hc_plotOptions(pie = list(innerSize = 100, depth = 45)) %>% 
-        hc_add_series_labels_values(
-          name = "Total",
-          labels = dbplot12()$DESCRICAO_CARGO_SIGLA,
-          values = dbplot12()$TOTAL)
-      hc
+    output$plot17 <- renderHighchart({
+      hctreemap(tm = dbplot17())
     })
-    # 13 Servidores por situação ----
-    dbplot13 <- reactive({
+    # 18 Servidores por situação ----
+    dbplot18 <- reactive({
       if (input$unidade_pessoal == "IFB"){
-        db <- db_siape %>% 
+        tm <- db_siape %>% 
           filter(REFERENCIA == max(db_siape$REFERENCIA), SIGLA_FUNCAO == "-1", COD_ORG_LOTACAO == "26428") %>% 
           group_by(SITUACAO_VINCULO) %>% 
-          summarise(TOTAL = n())
+          summarise(SERIE = n())
       } else {
-        db <- db_siape %>% 
+        tm <- db_siape %>% 
           filter(REFERENCIA == max(db_siape$REFERENCIA), SIGLA_FUNCAO == "-1", COD_ORG_LOTACAO == "26428", UORG_LOTACAO_GRUPO == input$unidade_pessoal) %>% 
           group_by(SITUACAO_VINCULO) %>% 
-          summarise(TOTAL = n())
+          summarise(SERIE = n())
       }
-      db <- db[order(db$TOTAL), ]
-      db
+      tm <- treemap(tm, index = "SITUACAO_VINCULO", vSize = "SERIE", vColor =  "SERIE",
+                    type = "value", palette = c("#19334d", "#264d73", "#336699", "#4080bf"), pdf(file = NULL))
+      tm
     })
-    output$plot13 <- renderHighchart({
-      hc <- highchart() %>%
-        hc_title(text = "") %>%
-        hc_subtitle(text = unique(dbplot13()$UORG_LOTACAO_GRUPO)) %>%
-        hc_yAxis(title = list(text = "")) %>%
-        hc_xAxis(title = list(text = "")) %>% 
-        hc_chart(type = 'pie', options3d = list(enabled = TRUE, alpha = 45)) %>% 
-        hc_plotOptions(pie = list(innerSize = 100, depth = 45)) %>% 
-        hc_add_series_labels_values(
-          name = "Total",
-          labels = dbplot13()$SITUACAO_VINCULO,
-          values = dbplot13()$TOTAL)
-      hc
+    output$plot18 <- renderHighchart({
+      hctreemap(tm = dbplot18())
     })
-    # 14 Jornada de trabalho dos técnicos ----
-    dbplot14 <- reactive({
+    # 19 Jornada de trabalho dos docentes e técnicos ----
+    dbplot19 <- reactive({
       if (input$unidade_pessoal == "IFB"){
         db <- db_siape %>% 
           filter(REFERENCIA == max(REFERENCIA), SIGLA_FUNCAO == "-1", COD_ORG_LOTACAO == "26428") %>% 
@@ -807,36 +996,33 @@ server <-
           filter(REFERENCIA == max(REFERENCIA), SIGLA_FUNCAO == "-1", COD_ORG_LOTACAO == "26428", UORG_LOTACAO_GRUPO == input$unidade_pessoal) %>% 
           group_by(JORNADA_DE_TRABALHO, TIPO_CARGO = ifelse(grepl("\\<PROF", DESCRICAO_CARGO), "DOCENTE", "TÉCNICO")) %>% 
           summarise(TOTAL = n())
-      } 
+      }
+      db1 <- tibble(JORNADA_DE_TRABALHO = rep(c("20 HORAS SEMANAIS", "25 HORAS SEMANAIS", "30 HORAS SEMANAIS", "40 HORAS SEMANAIS", "DEDICACAO EXCLUSIVA"),2),
+                    TIPO_CARGO = rep(c("TÉCNICO", "DOCENTE"), 5))
+      db <- full_join(db, db1, by = c("JORNADA_DE_TRABALHO", "TIPO_CARGO"))
+      if(any(is.na(db$TOTAL))) db[is.na(db$TOTAL), ]$TOTAL <- 0
+      db <- db[order(db$JORNADA_DE_TRABALHO), ]
       db <- spread(data = db, key = JORNADA_DE_TRABALHO, value = TOTAL, fill = 0)
+      nm <- seq(from = 1, to = ncol(db)-1)
+      nm <- paste0("SERIE", nm)
+      colnames(db) <- c("TIPO_CARGO", nm)
       db
     })
-    output$plot14 <- renderHighchart({
-      hc <- highchart() %>%
-        hc_title(text = "") %>%
-        hc_subtitle(text = unique(dbplot14()$UORG_LOTACAO_GRUPO)) %>%
-        hc_yAxis(title = list(text = "")) %>%
-        hc_xAxis(title = list(text = ""), categories = dbplot14()$TIPO_CARGO) %>%
-        hc_exporting(enabled = TRUE) %>% 
-        hc_chart(type = input$typeplot14) %>% 
-        hc_add_series(name = "20 HORAS", data = dbplot14()$`20 HORAS SEMANAIS`) %>%
-        hc_add_series(name = "25 HORAS", data = dbplot14()$`25 HORAS SEMANAIS`) %>%
-        hc_add_series(name = "30 HORAS", data = dbplot14()$`30 HORAS SEMANAIS`) %>%
-        hc_add_series(name = "40 HORAS", data = dbplot14()$`40 HORAS SEMANAIS`) %>% 
-        hc_add_series(name = "DEDICAÇÃO EXCLUSIVA", data = dbplot14()$`DEDICACAO EXCLUSIVA`)
-      if(input$dimension14 == TRUE){
-        hc <- hc %>% 
-          hc_chart(options3d = list(enabled = input$dimension14, beta = 10, alpha = 10))
-      }
-      if (input$groupplot14 != FALSE) {
-        hc <- hc %>% 
-          hc_plotOptions(series = list(stacking = input$groupplot14))
-      }
-      hc
-    })
+    output$plot19 <- renderHighchart({
+      highchart_new(data = dbplot19(),  
+                    series = c(SERIE1 = "20 HORAS", SERIE2 = "25 HORAS", SERIE3 = "30 HORAS", SERIE4 = "40 HORAS", SERIE5 = "DE"),
+                    subtitle = unique(dbplot19()$UORG_LOTACAO_GRUPO),
+                    categories = dbplot19()$TIPO_CARGO,
+                    credits = "Portal da Transparência",
+                    input_plot = c( 
+                      rap = input$restoapagar, 
+                      typeplot = input$typeplot19, 
+                      dimension = input$dimension19, 
+                      groupplot = input$groupplot19))
+      })
     
-    # 16 Servidores técnicos por classe ----
-    dbplot16 <- reactive({
+    # 20 Classificação dos cargos técnicos ----
+    dbplot20 <- reactive({
       if (input$unidade_pessoal == "IFB"){
         db <- db_siape %>% 
           filter(REFERENCIA == max(REFERENCIA), SIGLA_FUNCAO == "-1", COD_ORG_LOTACAO == "26428", !grepl("\\<PROF", DESCRICAO_CARGO)) %>% 
@@ -850,129 +1036,141 @@ server <-
       }
       db
     })
-    output$plot16 <- renderHighchart({
+    output$plot20 <- renderHighchart({
       hc <- highchart() %>%
         hc_title(text = "") %>%
-        hc_subtitle(text = unique(dbplot16()$UORG_LOTACAO_GRUPO)) %>%
+        hc_subtitle(text = unique(dbplot20()$UORG_LOTACAO_GRUPO)) %>%
         hc_yAxis(title = list(text = "")) %>%
         hc_xAxis(title = list(text = "")) %>% 
         hc_chart(type = 'pie', options3d = list(enabled = TRUE, alpha = 45)) %>% 
         hc_plotOptions(pie = list(innerSize = 100, depth = 45)) %>% 
         hc_add_series_labels_values(
           name = "Total",
-          labels = dbplot16()$CLASSE_CARGO,
-          values = dbplot16()$TOTAL)
+          labels = dbplot20()$CLASSE_CARGO,
+          values = dbplot20()$TOTAL)
       hc
     })
-    # 17 Servidores técnicos por padrao ----
-    dbplot17 <- reactive({
+    # 21 Nível de capacitação por classificação dos cargos técnicos ----
+    dbplot21 <- reactive({
       if (input$unidade_pessoal == "IFB"){
         db <- db_siape %>% 
-          filter(REFERENCIA == max(REFERENCIA), SIGLA_FUNCAO == "-1", COD_ORG_LOTACAO == "26428", !grepl("\\<PROF", DESCRICAO_CARGO)) %>% 
+          filter(REFERENCIA == max(REFERENCIA), 
+                 SIGLA_FUNCAO == "-1", 
+                 COD_ORG_LOTACAO == "26428", 
+                 !grepl("\\<PROF", DESCRICAO_CARGO),
+                 !DESCRICAO_CARGO == "Inválido") %>% 
           group_by(CLASSE_CARGO, PADRAO_CARGO = substr(PADRAO_CARGO, 1, 1)) %>% 
           summarise(TOTAL = n())
+        db1 <- db_siape %>% 
+          filter(REFERENCIA == max(REFERENCIA), 
+                 SIGLA_FUNCAO == "-1", 
+                 COD_ORG_LOTACAO == "26428", 
+                 !grepl("\\<PROF", DESCRICAO_CARGO),
+                 !DESCRICAO_CARGO == "Inválido") %>% 
+          group_by(CLASSE_CARGO, PADRAO_CARGO = "TOTAL") %>% 
+          summarise(TOTAL = n())
+        db <- bind_rows(db, db1)
       } else {
         db <- db_siape %>% 
-          filter(REFERENCIA == max(REFERENCIA), SIGLA_FUNCAO == "-1", COD_ORG_LOTACAO == "26428", UORG_LOTACAO_GRUPO == input$unidade_pessoal, !grepl("\\<PROF", DESCRICAO_CARGO)) %>% 
+          filter(REFERENCIA == max(REFERENCIA), 
+                 SIGLA_FUNCAO == "-1", 
+                 COD_ORG_LOTACAO == "26428", 
+                 UORG_LOTACAO_GRUPO == input$unidade_pessoal, 
+                 !grepl("\\<PROF", DESCRICAO_CARGO),
+                 !DESCRICAO_CARGO == "Inválido") %>% 
           group_by(CLASSE_CARGO, PADRAO_CARGO = substr(PADRAO_CARGO, 1, 1)) %>% 
           summarise(TOTAL = n())
+        db1 <- db_siape %>% 
+          filter(REFERENCIA == max(REFERENCIA), 
+                 SIGLA_FUNCAO == "-1", 
+                 COD_ORG_LOTACAO == "26428", 
+                 UORG_LOTACAO_GRUPO == input$unidade_pessoal, 
+                 !grepl("\\<PROF", DESCRICAO_CARGO),
+                 !DESCRICAO_CARGO == "Inválido") %>% 
+          group_by(CLASSE_CARGO, PADRAO_CARGO = "TOTAL") %>% 
+          summarise(TOTAL = n())
+        db <- bind_rows(db, db1)
       }
+      db1 <- tibble(CLASSE_CARGO = rep(c("A", "B", "C", "D", "E"), 4), PADRAO_CARGO = rep(c("1", "2", "3", "4"), 5))
+      db1 <- db1[order(db1$CLASSE_CARGO), ]
+      db <- full_join(db, db1, by = c("CLASSE_CARGO", "PADRAO_CARGO"))
+      if(any(is.na(db$TOTAL))) db[is.na(db$TOTAL), ]$TOTAL <- 0
+      db <- db[order(db$CLASSE_CARGO), ]
+      db <- spread(data = db, key = PADRAO_CARGO, value = TOTAL, fill = 0)
+      nm <- seq(from = 1, to = ncol(db)-2)
+      nm <- paste0("SERIE", nm)
+      colnames(db) <- c("CLASSE_CARGO", nm, "SERIE_TYPE")
       db
     })
-    output$plot17 <- renderHighchart({
-      hc <- highchart() %>%
-        hc_title(text = "") %>%
-        hc_subtitle(text = unique(dbplot17()$UORG_LOTACAO_GRUPO)) %>%
-        hc_yAxis(title = list(text = "")) %>%
-        hc_xAxis(title = list(text = ""), categories = unique(dbplot17()$CLASSE_CARGO)) %>%
-        hc_exporting(enabled = TRUE) %>% 
-        hc_chart(type = input$typeplot17) %>% 
-        hc_add_series(name = "Capacitação I",   data = dbplot17()[dbplot17()$PADRAO_CARGO == "1", ]$TOTAL) %>%
-        hc_add_series(name = "Capacitação II",  data = dbplot17()[dbplot17()$PADRAO_CARGO == "2", ]$TOTAL) %>%
-        hc_add_series(name = "Capacitação III", data = dbplot17()[dbplot17()$PADRAO_CARGO == "3", ]$TOTAL) %>%
-        hc_add_series(name = "Capacitação IV",  data = dbplot17()[dbplot17()$PADRAO_CARGO == "4", ]$TOTAL)
-      if(input$dimension17 == TRUE){
-        hc <- hc %>% 
-          hc_chart(options3d = list(enabled = input$dimension17, beta = 10, alpha = 10))
-      }
-      if (input$groupplot17 != FALSE) {
-        hc <- hc %>% 
-          hc_plotOptions(series = list(stacking = input$groupplot17))
-      }
-      hc
+    output$plot21 <- renderHighchart({
+      highchart_new(data = dbplot21(),  
+                    series = c(SERIE1 = "Nível I", SERIE2 = "Nível II", SERIE3 = "Nível III", SERIE4 = "Nível IV"),
+                    subtitle = unique(dbplot21()$UORG_LOTACAO_GRUPO),
+                    categories = dbplot21()$CLASSE_CARGO,
+                    credits = "Portal da Transparência",
+                    #serie_type = "spline",
+                    input_plot = c( 
+                      rap = input$restoapagar, 
+                      typeplot = input$typeplot21, 
+                      dimension = input$dimension21, 
+                      groupplot = input$groupplot21))
     })
-    # 18 Cargos em comissão e funções gratificadas ----
-    dbplot18 <- reactive({
+    # 22 Cargos em comissão e funções gratificadas ----
+    dbplot22 <- reactive({
       if (input$unidade_pessoal == "IFB"){
         db <- db_siape %>% 
           filter(REFERENCIA == max(REFERENCIA), !SIGLA_FUNCAO == "-1", COD_ORG_EXERCICIO == "26428") %>% 
           group_by(FUNCAO = paste(SIGLA_FUNCAO, NIVEL_FUNCAO)) %>% 
-          summarise(TOTAL = n())
+          summarise(SERIE1 = n())
       } else {
         db <- db_siape %>% 
           filter(REFERENCIA == max(REFERENCIA), !SIGLA_FUNCAO == "-1", COD_ORG_EXERCICIO == "26428", UORG_LOTACAO_GRUPO == input$unidade_pessoal) %>% 
           group_by(FUNCAO = paste(SIGLA_FUNCAO, NIVEL_FUNCAO)) %>% 
-          summarise(TOTAL = n())
+          summarise(SERIE1 = n())
       }
       db
     })
-    output$plot18 <- renderHighchart({
-      hc <- highchart() %>%
-        hc_title(text = "") %>%
-        hc_subtitle(text = unique(dbplot18()$UORG_LOTACAO_GRUPO)) %>%
-        hc_yAxis(title = list(text = "")) %>%
-        hc_xAxis(title = list(text = ""), categories = dbplot18()$FUNCAO) %>%
-        hc_exporting(enabled = TRUE) %>% 
-        hc_chart(type = input$typeplot18) %>% 
-        hc_add_series(name = "Total",   data = dbplot18()$TOTAL)
-      if(input$dimension18 == TRUE){
-        hc <- hc %>% 
-          hc_chart(options3d = list(enabled = input$dimension18, beta = 10, alpha = 10))
-      }
-      if (input$groupplot18 != FALSE) {
-        hc <- hc %>% 
-          hc_plotOptions(series = list(stacking = input$groupplot18))
-      }
-      hc
-    })
-    # 19 Admissão e desligamento de docentes e técnicos por ano ----
-    dbplot19 <- reactive({
+    output$plot22 <- renderHighchart({
+      highchart_new(data = dbplot22(),  
+                    series = c(SERIE1 = "Nº de cargos e funções"),
+                    subtitle = unique(dbplot22()$UORG_LOTACAO_GRUPO),
+                    categories = dbplot22()$FUNCAO,
+                    credits = "Portal da Transparência",
+                    input_plot = c( 
+                      rap = input$restoapagar, 
+                      typeplot = input$typeplot22, 
+                      dimension = input$dimension22, 
+                      groupplot = input$groupplot22))
+      })
+    # 23 Admissão e desligamento de docentes e técnicos por ano ----
+    dbplot23 <- reactive({
       if (input$unidade_pessoal == "IFB"){
         db <- sp_rot_efetivo %>% 
-          group_by(REFERENCIA = substr(FIM, 1, 4), TIPO) %>% 
-          summarise_at(.vars = "TOTAL", .funs = sum)
-        db$UORG_LOTACAO_GRUPO == "IFB"
+          group_by(REFERENCIA = substr(FIM, 1, 4), TIPO = ifelse(TIPO == "ADMISSAO", "SERIE1", "SERIE2")) %>% 
+          summarise_at(.vars = "TOTAL", .funs = sum) %>% mutate(UORG_LOTACAO_GRUPO = "IFB")
       } else {
         db <- sp_rot_unidade %>% 
           filter(UORG_LOTACAO_GRUPO == input$unidade_pessoal) %>% 
-          group_by(UORG_LOTACAO_GRUPO, REFERENCIA = substr(FIM, 1, 4), TIPO) %>%  
+          group_by(UORG_LOTACAO_GRUPO, REFERENCIA = substr(FIM, 1, 4), TIPO = ifelse(TIPO == "ADMISSAO", "SERIE1", "SERIE2")) %>%  
           summarise_at(.vars = "TOTAL", .funs = sum)
       }
       db <- spread(data = db, key = TIPO, value = TOTAL, fill = 0)
       db
     })
-    output$plot19 <- renderHighchart({
-      hc <- highchart() %>%
-        hc_title(text = "") %>%
-        hc_subtitle(text = unique(dbplot19()$UORG_LOTACAO_GRUPO)) %>%
-        hc_yAxis(title = list(text = "")) %>%
-        hc_xAxis(title = list(text = ""), categories = dbplot19()$REFERENCIA) %>%
-        hc_exporting(enabled = TRUE) %>% 
-        hc_chart(type = input$typeplot19) %>% 
-        hc_add_series(name = "ADMISSÃO",     data = dbplot19()$ADMISSAO) %>% 
-        hc_add_series(name = "DESLIGAMENTO", data = dbplot19()$DESLIGAMENTO) 
-      if (input$dimension19 == TRUE){
-        hc <- hc %>% 
-          hc_chart(options3d = list(enabled = input$dimension19, beta = 10, alpha = 10))
-      }
-      if (input$groupplot19 != FALSE) {
-        hc <- hc %>% 
-          hc_plotOptions(series = list(stacking = input$groupplot19))
-      }
-      hc
+    output$plot23 <- renderHighchart({
+      highchart_new(data = dbplot23(),  
+                    series = c(SERIE1 = "Admissões", SERIE2 = "Desligamentos"),
+                    subtitle = unique(dbplot23()$UORG_LOTACAO_GRUPO),
+                    categories = dbplot23()$REFERENCIA,
+                    credits = "Portal da Transparência",
+                    input_plot = c( 
+                      rap = input$restoapagar, 
+                      typeplot = input$typeplot23, 
+                      dimension = input$dimension23, 
+                      groupplot = input$groupplot23))
     })
-    # 20 Admissão e desligamento de docentes e técnicos por ano e tipo de cargo ----
-    dbplot20 <- reactive({
+    # 24 Admissão e desligamento de docentes e técnicos por ano e tipo de cargo ----
+    dbplot24 <- reactive({
       if (input$unidade_pessoal == "IFB"){
         db <- sp_rot_efetivo %>% mutate(TIPO_CARGO = ifelse(grepl("\\<PROF", DESCRICAO_CARGO), "DOCENTE", "TECNICO"))
         db1 <- db %>% 
@@ -981,14 +1179,14 @@ server <-
                    TIPO) %>% 
           summarise_at(.vars = "TOTAL", .funs = sum)
         db1 <- spread(data = db1, key = TIPO, value = TOTAL, fill = 0)
-        colnames(db1) <- c("REFERENCIA", "ADMISSAO_DOCENTE", "DESLIGAMENTO_DOCENTE")
+        colnames(db1) <- c("REFERENCIA", "SERIE1", "SERIE3")
         db2 <- db %>% 
           filter(TIPO_CARGO == "TECNICO") %>% 
           group_by(REFERENCIA = substr(FIM, 1, 4),
                    TIPO) %>% 
           summarise_at(.vars = "TOTAL", .funs = sum)
         db2 <- spread(data = db2, key = TIPO, value = TOTAL, fill = 0)
-        colnames(db2) <- c("REFERENCIA", "ADMISSAO_TECNICO", "DESLIGAMENTO_TECNICO")
+        colnames(db2) <- c("REFERENCIA", "SERIE2", "SERIE4")
         db2$UORG_LOTACAO_GRUPO <- "IFB"
         db <- left_join(db1, db2, by = "REFERENCIA")
       } else {
@@ -999,80 +1197,62 @@ server <-
                    TIPO) %>% 
           summarise_at(.vars = "TOTAL", .funs = sum)
         db1 <- spread(data = db1, key = TIPO, value = TOTAL, fill = 0)
-        colnames(db1) <- c("REFERENCIA", "ADMISSAO_DOCENTE", "DESLIGAMENTO_DOCENTE")
+        colnames(db1) <- c("REFERENCIA", "SERIE1", "SERIE3")
         db2 <- db %>% 
           filter(UORG_LOTACAO_GRUPO == input$unidade_pessoal, TIPO_CARGO == "TECNICO") %>% 
           group_by(REFERENCIA = substr(FIM, 1, 4),
                    TIPO) %>% 
           summarise_at(.vars = "TOTAL", .funs = sum)
         db2 <- spread(data = db2, key = TIPO, value = TOTAL, fill = 0)
-        colnames(db2) <- c("REFERENCIA", "ADMISSAO_TECNICO", "DESLIGAMENTO_TECNICO")
+        colnames(db2) <- c("REFERENCIA", "SERIE2", "SERIE4")
         db2$UORG_LOTACAO_GRUPO <- "IFB"
         db <- left_join(db1, db2, by = "REFERENCIA")
       }
       db
     })
-    output$plot20 <- renderHighchart({
-      hc <- highchart() %>%
-        hc_title(text = "") %>%
-        hc_subtitle(text = unique(dbplot20()$UORG_LOTACAO_GRUPO)) %>%
-        hc_yAxis(title = list(text = "")) %>%
-        hc_xAxis(title = list(text = ""), categories = dbplot20()$REFERENCIA) %>%
-        hc_exporting(enabled = TRUE) %>% 
-        hc_chart(type = input$typeplot20) %>% 
-        hc_add_series(name = "ADMIS DOCENTE",  data = dbplot20()$ADMISSAO_DOCENTE) %>% 
-        hc_add_series(name = "ADMIS TÉCNICO", data = dbplot20()$ADMISSAO_TECNICO) %>% 
-        hc_add_series(name = "DESLI DOCENTE", data = dbplot20()$DESLIGAMENTO_DOCENTE) %>% 
-        hc_add_series(name = "DESLI TÉCNICO", data = dbplot20()$DESLIGAMENTO_TECNICO)
-      if (input$dimension20 == TRUE){
-        hc <- hc %>% 
-          hc_chart(options3d = list(enabled = input$dimension20, beta = 10, alpha = 10))
-      }
-      if (input$groupplot20 != FALSE) {
-        hc <- hc %>% 
-          hc_plotOptions(series = list(stacking = input$groupplot20))
-      }
-      hc
+    output$plot24 <- renderHighchart({
+      highchart_new(data = dbplot24(),  
+                    series = c(SERIE1 = "Admissão (Docente)", SERIE2 = "Admissão (Técnico)", SERIE3 = "Desligamento (Docente)", SERIE4 = "Desligamento (Técnico)"),
+                    subtitle = unique(dbplot24()$UORG_LOTACAO_GRUPO),
+                    categories = dbplot24()$REFERENCIA,
+                    credits = "Portal da Transparência",
+                    input_plot = c( 
+                      rap = input$restoapagar, 
+                      typeplot = input$typeplot24, 
+                      dimension = input$dimension24, 
+                      groupplot = input$groupplot24))
     })
-    # 21 Admissão e desligamento de prof. temporários e substitutos por ano ----
-    dbplot21 <- reactive({
+    # 25 Admissão e desligamento de prof. temporários e substitutos por ano ----
+    dbplot25 <- reactive({
       if (input$unidade_pessoal == "IFB"){
         db <- sp_rot_vinculo %>% 
           filter(grepl("\\<CONT.PROF", SITUACAO_VINCULO)) %>% 
-          group_by(REFERENCIA = substr(FIM, 1, 4), TIPO) %>% 
-          summarise_at(.vars = "TOTAL", .funs = sum)
-        db$UORG_LOTACAO_GRUPO == "IFB"
+          group_by(REFERENCIA = substr(FIM, 1, 4), TIPO = ifelse(TIPO == "ADMISSAO", "SERIE1", "SERIE2")) %>% 
+          summarise_at(.vars = "TOTAL", .funs = sum) %>% 
+          mutate(UORG_LOTACAO_GRUPO = "IFB")
       } else {
         db <- sp_rot_vinculo %>% 
           filter(grepl("\\<CONT.PROF", SITUACAO_VINCULO), UORG_LOTACAO_GRUPO == input$unidade_pessoal) %>% 
-          group_by(UORG_LOTACAO_GRUPO, REFERENCIA = substr(FIM, 1, 4), TIPO) %>%  
+          group_by(UORG_LOTACAO_GRUPO, REFERENCIA = substr(FIM, 1, 4), TIPO = ifelse(TIPO == "ADMISSAO", "SERIE1", "SERIE2")) %>%  
           summarise_at(.vars = "TOTAL", .funs = sum)
       }
       db <- spread(data = db, key = TIPO, value = TOTAL, fill = 0)
       db
     })
-    output$plot21 <- renderHighchart({
-      hc <- highchart() %>%
-        hc_title(text = "") %>%
-        hc_subtitle(text = unique(dbplot21()$UORG_LOTACAO_GRUPO)) %>%
-        hc_yAxis(title = list(text = "")) %>%
-        hc_xAxis(title = list(text = ""), categories = dbplot21()$REFERENCIA) %>%
-        hc_exporting(enabled = TRUE) %>% 
-        hc_chart(type = input$typeplot21) %>% 
-        hc_add_series(name = "ADMISSÃO",     data = dbplot21()$ADMISSAO) %>% 
-        hc_add_series(name = "DESLIGAMENTO", data = dbplot21()$DESLIGAMENTO) 
-      if (input$dimension21 == TRUE){
-        hc <- hc %>% 
-          hc_chart(options3d = list(enabled = input$dimension21, beta = 10, alpha = 10))
-      }
-      if (input$groupplot21 != FALSE) {
-        hc <- hc %>% 
-          hc_plotOptions(series = list(stacking = input$groupplot21))
-      }
-      hc
+    output$plot25 <- renderHighchart({
+      highchart_new(data = dbplot25(),  
+                    series = c(SERIE1 = "Admissões", SERIE2 = "Desligamentos"),
+                    subtitle = unique(dbplot25()$UORG_LOTACAO_GRUPO),
+                    categories = dbplot25()$REFERENCIA,
+                    credits = "Portal da Transparência",
+                    input_plot = c( 
+                      rap = input$restoapagar, 
+                      typeplot = input$typeplot25, 
+                      dimension = input$dimension25, 
+                      groupplot = input$groupplot25))
     })
-    # 22 Admissão e desligamento de prof. temporários e substitutos por ano e vínculo ----
-    dbplot22 <- reactive({
+    # 26 Admissão e desligamento de prof. temporários e substitutos por ano e vínculo ----
+    dbplot26 <- reactive({
       if (input$unidade_pessoal == "IFB"){
         db <- sp_rot_vinculo %>% filter(grepl("\\<CONT.PROF", SITUACAO_VINCULO)) %>% mutate(VINCULO = ifelse(grepl("TEMPORARIO$", SITUACAO_VINCULO), "TEMPORARIO", "SUBSTITUTO"))
         db1 <- db %>% 
@@ -1081,14 +1261,14 @@ server <-
                    TIPO) %>% 
           summarise_at(.vars = "TOTAL", .funs = sum)
         db1 <- spread(data = db1, key = TIPO, value = TOTAL, fill = 0)
-        colnames(db1) <- c("REFERENCIA", "ADMISSAO_TEMPORARIO", "DESLIGAMENTO_TEMPORARIO")
+        colnames(db1) <- c("REFERENCIA", "SERIE1", "SERIE3")
         db2 <- db %>% 
           filter(VINCULO == "SUBSTITUTO") %>% 
           group_by(REFERENCIA = substr(FIM, 1, 4),
                    TIPO) %>% 
           summarise_at(.vars = "TOTAL", .funs = sum)
         db2 <- spread(data = db2, key = TIPO, value = TOTAL, fill = 0)
-        colnames(db2) <- c("REFERENCIA", "ADMISSAO_SUBSTITUTO", "DESLIGAMENTO_SUBSTITUTO")
+        colnames(db2) <- c("REFERENCIA", "SERIE2", "SERIE4")
         db2$UORG_LOTACAO_GRUPO <- "IFB"
         db <- left_join(db1, db2, by = "REFERENCIA")
       } else {
@@ -1099,42 +1279,31 @@ server <-
                    TIPO) %>% 
           summarise_at(.vars = "TOTAL", .funs = sum)
         db1 <- spread(data = db1, key = TIPO, value = TOTAL, fill = 0)
-        colnames(db1) <- c("REFERENCIA", "ADMISSAO_TEMPORARIO", "DESLIGAMENTO_TEMPORARIO")
+        colnames(db1) <- c("REFERENCIA", "SERIE1", "SERIE3")
         db2 <- db %>% 
           filter(UORG_LOTACAO_GRUPO == input$unidade_pessoal, VINCULO == "SUBSTITUTO") %>% 
           group_by(REFERENCIA = substr(FIM, 1, 4),
                    TIPO) %>% 
           summarise_at(.vars = "TOTAL", .funs = sum)
         db2 <- spread(data = db2, key = TIPO, value = TOTAL, fill = 0)
-        colnames(db2) <- c("REFERENCIA", "ADMISSAO_SUBSTITUTO", "DESLIGAMENTO_SUBSTITUTO")
+        colnames(db2) <- c("REFERENCIA", "SERIE2", "SERIE4")
         db2$UORG_LOTACAO_GRUPO <- "IFB"
         db <- left_join(db1, db2, by = "REFERENCIA")
       }
       db
     })
-    output$plot22 <- renderHighchart({
-      hc <- highchart() %>%
-        hc_title(text = "") %>%
-        hc_subtitle(text = unique(dbplot22()$UORG_LOTACAO_GRUPO)) %>%
-        hc_yAxis(title = list(text = "")) %>%
-        hc_xAxis(title = list(text = ""), categories = dbplot22()$REFERENCIA) %>%
-        hc_exporting(enabled = TRUE) %>% 
-        hc_chart(type = input$typeplot22) %>% 
-        hc_add_series(name = "ADMIS TEMPORÁRIO",  data = dbplot22()$ADMISSAO_TEMPORARIO) %>% 
-        hc_add_series(name = "ADMIS SUBSTITUTO", data = dbplot22()$ADMISSAO_SUBSTITUTO) %>% 
-        hc_add_series(name = "DESLI TEMPORÁRIO", data = dbplot22()$DESLIGAMENTO_TEMPORARIO) %>% 
-        hc_add_series(name = "DESLI SUBSTITUTO", data = dbplot22()$DESLIGAMENTO_SUBSTITUTO)
-      if (input$dimension22 == TRUE){
-        hc <- hc %>% 
-          hc_chart(options3d = list(enabled = input$dimension22, beta = 10, alpha = 10))
-      }
-      if (input$groupplot22 != FALSE) {
-        hc <- hc %>% 
-          hc_plotOptions(series = list(stacking = input$groupplot22))
-      }
-      hc
+    output$plot26 <- renderHighchart({
+      highchart_new(data = dbplot26(),  
+                    series = c(SERIE1 = "Admissão (Temporário)", SERIE2 = "Admissão (Substituto)", SERIE3 = "Desligamento (Temporário)", SERIE4 = "Desligamento (Substituto)"),
+                    subtitle = unique(dbplot26()$UORG_LOTACAO_GRUPO),
+                    categories = dbplot26()$REFERENCIA,
+                    credits = "Portal da Transparência",
+                    input_plot = c( 
+                      rap = input$restoapagar, 
+                      typeplot = input$typeplot26, 
+                      dimension = input$dimension26, 
+                      groupplot = input$groupplot26))
     })
-    # 24 
   }
 shinyApp(ui,server)
 
