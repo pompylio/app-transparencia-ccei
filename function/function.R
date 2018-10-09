@@ -3,8 +3,8 @@
 extract_orc <- function(file, reference){
   require(openxlsx)
   UG <- data.frame(
-    CO_UG = c("152140", "152141", '152142', "152143", "152144", "152145", "152146", "152147", "155145", "155150", "155151", "158501", "158143", '152139'), 
-    SG_UG = c("CTAG", "CSAM", "CBRA", "CTGC", "CSSB", "CCEI", "CEST", "CRFI", "CBRZ", "CCAN", 'CSOB', "CPLA", "RIFB", "CGAM"), 
+    CO_UG = c("152140", "152141", '152142', "152143", "152144", "152145", "152146", "152147", "155145", "155150", "155151", "158501", "158143", '152139', "152143"), 
+    SG_UG = c("CTAG", "CSAM", "CBRA", "CTGC", "CSSB", "CCEI", "CEST", "CRFI", "CBRZ", "CCAN", 'CSOB', "CPLA", "RIFB", "CGAM", "CREM"), 
     CO_UO = "26428",
     SG_UO = "IFB",
     stringsAsFactors = FALSE)
