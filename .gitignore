@@ -7,6 +7,7 @@
 packrat/
 img/
 modules/
+security/
 data/tm.rds
 data/db_siafi.rds
 data/db_siafi_tg.rds
@@ -19,5 +20,8 @@ data/sp_rot_comissao.rds
 data/sp_rot_efetivo.rds
 data/sp_rot_unidade.rds
 data/sp_rot_vinculo.rds
+data/db_avager_av.rds
+data/db_avager_nt.rds
 packrat/lib*/
 packrat/src/
+.httr-oauth
