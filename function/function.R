@@ -479,13 +479,13 @@ siape_base <- function(data){
 siape_quadro <- function(data){
   doc <- data %>%
     filter(SIGLA_FUNCAO == "-1", COD_ORG_LOTACAO == "26428", grepl("\\<PROF", DESCRICAO_CARGO)) %>% 
-    group_by(REFERENCIA = substr(REFERENCIA, 1, 6), UORG_LOTACAO_GRUPO) %>%
-    summarise(DOCENTE = n())
+    group_by(REFERENCIA = substr(REFERENCIA, 1, 6), UORG_LOTACAO_GRUPO, TIPO = "DOCENTE") %>%
+    summarise(TOTAL = n())
   tec <- data %>%
     filter(SIGLA_FUNCAO == "-1", COD_ORG_LOTACAO == "26428", !grepl("\\<PROF", DESCRICAO_CARGO)) %>% 
-    group_by(REFERENCIA = substr(REFERENCIA, 1, 6), UORG_LOTACAO_GRUPO) %>%
-    summarise(TECNICO = n())
-  db <- left_join(doc, tec, by = c("REFERENCIA", "UORG_LOTACAO_GRUPO"))
+    group_by(REFERENCIA = substr(REFERENCIA, 1, 6), UORG_LOTACAO_GRUPO, TIPO = "TECNICO") %>%
+    summarise(TOTAL = n())
+  db <- bind_rows(doc, tec) %>% spread(key = TIPO, value = TOTAL, fill = 0)
   db$TOTAL <- db$DOCENTE + db$TECNICO
   if(any(is.na(db$DOCENTE))) db[is.na(db$DOCENTE), ]$DOCENTE <- 0
   if(any(is.na(db$TECNICO))) db[is.na(db$TECNICO), ]$TECNICO <- 0
@@ -583,6 +583,23 @@ siape_rotatividade_acumulada <- function(data, ref_ini, ref_end, group_by, sit_v
   }
   return(db)
 }
+siape_distribuicao_cargo <- function(data){
+  efe <- data %>%
+    filter(SIGLA_FUNCAO == "-1", COD_ORG_EXERCICIO == "26428") %>%
+    group_by(REFERENCIA, UORG_LOTACAO_GRUPO, TIPO_CARGO = ifelse(grepl("\\<PROF", DESCRICAO_CARGO), "DOCENTE", "TECNICO"),
+             DESCRICAO_CARGO, Id_SERVIDOR_PORTAL, ORG_ORIGEM = ifelse(COD_ORG_LOTACAO == "26428", "IFB", "OUTRO")) %>%
+    summarise()
+  com <- data %>%
+    filter(!SIGLA_FUNCAO == "-1", COD_ORG_EXERCICIO == "26428") %>%
+    group_by(REFERENCIA, FUNCAO = paste(SIGLA_FUNCAO, NIVEL_FUNCAO), Id_SERVIDOR_PORTAL) %>%
+    summarise() %>%
+    left_join(efe, by = c("REFERENCIA", "Id_SERVIDOR_PORTAL")) %>% 
+    group_by(REFERENCIA, UORG_LOTACAO_GRUPO, ORG_ORIGEM, FUNCAO, TIPO_CARGO) %>% 
+    summarise(TOTAL = n())
+  if(any(is.na(com$TIPO_CARGO))) com[is.na(com$TIPO_CARGO), ]$TIPO_CARGO <- "EXTERNO"
+  if(any(is.na(com$ORG_ORIGEM))) com[is.na(com$ORG_ORIGEM), ]$ORG_ORIGEM <- "EXTERNO"
+  return(com)
+}
 
 # SIAFI -------------------------------------------------------------------
 
@@ -603,13 +620,13 @@ siafi_classificacao <- function(data, group, sum_by){
 
 # SHINY -------------------------------------------------------------------
 
-boxnew <- function(inputId, boxtitle, menu_selected, label, choices, selected, status, width_box, plot_highchart){
+boxnew <- function(inputId, boxtitle, menu_selected, label, choices, selected, status, width_box, plot_highchart, description){
   if(missing(menu_selected)){
     boxnew <- 
       shinydashboard::box(
-        status = status,
+        solidHeader = T,
         width = width_box,
-        collapsible = F,
+        collapsible = T,
         collapsed = F,
         title = boxtitle,
         shinycssloaders::withSpinner(highchartOutput(paste0("plot",inputId)),type = 8L,color = "#3c8dbc"))
@@ -678,43 +695,43 @@ boxnew <- function(inputId, boxtitle, menu_selected, label, choices, selected, s
         choices = if(any(choices[["filtery"]]=="empty")){"Y"}else{choices[["filtery"]]},
         selected = if(selected["filtery"]=="empty"){"Y"}else{selected["filtery"]})}
     boxnew <- 
-      shinydashboard::box(
-        title = NULL,
-        status = status,
+      shinydashboardPlus::boxPlus(
+        title = boxtitle,
+        solidHeader = TRUE,
         width = if(missing(width_box)){6}else{width_box},
-        collapsible = F,
-        collapsed = F,
-        column(
-          width = 12,
+        collapsible = TRUE, 
+        closable = FALSE,
+        enable_sidebar = TRUE,
+        sidebar_width = 100,
+        sidebar_background = "#ffffff",
+        sidebar_start_open = FALSE,
+        sidebar_content = tagList(
           column(
-            width = 11,
-            h4(boxtitle)),
+            width = 6,
+            strong(p(color = "black", "Configuração:")),
+            if(any(menu_selected == "typeplot")){typeplot}else{NULL},
+            if(any(menu_selected == "groupplot")){groupplot}else{NULL},
+            if(any(menu_selected == "dimension")){dimension}else{NULL},
+            if(any(menu_selected == "year")){year}else{NULL},
+            if(any(menu_selected == "yearmonth")){yearmonth}else{NULL},
+            if(any(menu_selected == "department")){department}else{NULL},
+            if(any(menu_selected == "programa")){programa}else{NULL},
+            if(any(menu_selected == "selectY")){selectY}else{NULL},
+            if(any(menu_selected == "filterx")){filterx}else{NULL},
+            if(any(menu_selected == "filtery")){filtery}else{NULL}
+          ),
           column(
-            width = 1, align = 'right',
-            shinyWidgets::dropdownButton(
-              size = "sm",
-              circle = FALSE, 
-              status = status,  
-              width = "200px",
-              right = TRUE,
-              tooltip = tooltipOptions(title = "Filtro"),
-              if(any(menu_selected == "typeplot")){typeplot}else{NULL},
-              if(any(menu_selected == "groupplot")){groupplot}else{NULL},
-              if(any(menu_selected == "dimension")){dimension}else{NULL},
-              if(any(menu_selected == "year")){year}else{NULL},
-              if(any(menu_selected == "yearmonth")){yearmonth}else{NULL},
-              if(any(menu_selected == "department")){department}else{NULL},
-              if(any(menu_selected == "programa")){programa}else{NULL},
-              if(any(menu_selected == "selectY")){selectY}else{NULL},
-              if(any(menu_selected == "filterx")){filterx}else{NULL},
-              if(any(menu_selected == "filtery")){filtery}else{NULL}))),
-        column(
-          width = 12,
-          shinycssloaders::withSpinner(highchartOutput(paste0("plot",inputId)),type = 8L,color = "#3c8dbc")))
+            width = 6,
+            strong(p("Descrição do gráfico:")),
+            p(align = "justify", if(missing(description)){""}else{HTML(paste(description, collapse = "<br/>"))})
+          )
+          
+        ),
+        shinycssloaders::withSpinner(highchartOutput(paste0("plot",inputId)),type = 8L,color = "#3c8dbc")
+      )
   }
   return(boxnew)
-  }
-  
+}
 
 # HIGHCHARTER -------------------------------------------------------------
 
@@ -772,24 +789,35 @@ HighchartOrc <- function(data, series, subtitle, credits, categories, input_plot
   hc
 }
 
-highchart_new <- function(data, categories, series, subtitle, credits, input_plot, serie_type){
+highchart_new <- function(data, categories, series, subtitle, credits, input_plot, serie_type, origin, colors){
   hc <- highchart() %>%
     hc_title(text = "") %>%
     hc_subtitle(text = subtitle) %>%
     hc_yAxis(title = list(text = "")) %>%
     hc_xAxis(title = list(text = ""), categories = c(list(categories)[[1]], categories)) %>%
     hc_exporting(enabled = TRUE) %>% 
-    hc_chart(type = input_plot[["typeplot"]])
-    if (any(names(series) == "SERIE1")) {hc <- hc %>% hc_add_series(name = series[["SERIE1"]],  data = data$SERIE1)}
-    if (any(names(series) == "SERIE2")) {hc <- hc %>% hc_add_series(name = series[["SERIE2"]],  data = data$SERIE2)}
-    if (any(names(series) == "SERIE3")) {hc <- hc %>% hc_add_series(name = series[["SERIE3"]],  data = data$SERIE3)}
-    if (any(names(series) == "SERIE4")) {hc <- hc %>% hc_add_series(name = series[["SERIE4"]],  data = data$SERIE4)}
-    if (any(names(series) == "SERIE5")) {hc <- hc %>% hc_add_series(name = series[["SERIE5"]],  data = data$SERIE5)}
-    if (any(names(series) == "SERIE6")) {hc <- hc %>% hc_add_series(name = series[["SERIE6"]],  data = data$SERIE6)}
-    if (any(names(series) == "SERIE7")) {hc <- hc %>% hc_add_series(name = series[["SERIE7"]],  data = data$SERIE7)}
-    if (any(names(series) == "SERIE8")) {hc <- hc %>% hc_add_series(name = series[["SERIE8"]],  data = data$SERIE8)}
-    if (any(names(series) == "SERIE9")) {hc <- hc %>% hc_add_series(name = series[["SERIE9"]],  data = data$SERIE9)}
-    if (any(names(series) == "SERIE10")) {hc <- hc %>% hc_add_series(name = series[["SERIE10"]], data = data$SERIE10)}
+    hc_chart(type = input_plot[["typeplot"]], marginLeft = 70, marginRight = 70)
+    if (!missing(origin)){
+      if (any(origin == "orcamento")){
+        hc <- hc %>% hc_colors(colors)
+      }
+    }
+  if (any(names(series) == "SERIE1")) {hc <- hc %>% hc_add_series(name = series[["SERIE1"]],  data = data$SERIE1)}
+  if (any(names(series) == "SERIE2")) {hc <- hc %>% hc_add_series(name = series[["SERIE2"]],  data = data$SERIE2)}
+  if (any(names(series) == "SERIE3")) {hc <- hc %>% hc_add_series(name = series[["SERIE3"]],  data = data$SERIE3)}
+  if (any(names(series) == "SERIE4")) {hc <- hc %>% hc_add_series(name = series[["SERIE4"]],  data = data$SERIE4)}
+  if (any(names(series) == "SERIE5")) {hc <- hc %>% hc_add_series(name = series[["SERIE5"]],  data = data$SERIE5)}
+  if (any(names(series) == "SERIE6")) {hc <- hc %>% hc_add_series(name = series[["SERIE6"]],  data = data$SERIE6)}
+  if (any(names(series) == "SERIE7")) {hc <- hc %>% hc_add_series(name = series[["SERIE7"]],  data = data$SERIE7)}
+  if (any(names(series) == "SERIE8")) {hc <- hc %>% hc_add_series(name = series[["SERIE8"]],  data = data$SERIE8)}
+  if (any(names(series) == "SERIE9")) {hc <- hc %>% hc_add_series(name = series[["SERIE9"]],  data = data$SERIE9)}
+  if (any(names(series) == "SERIE10")) {hc <- hc %>% hc_add_series(name = series[["SERIE10"]], data = data$SERIE10)}
+  if (any(names(series) == "SERIE11")) {hc <- hc %>% hc_add_series(name = series[["SERIE11"]], data = data$SERIE11)}
+  if (any(names(series) == "SERIE12")) {hc <- hc %>% hc_add_series(name = series[["SERIE12"]], data = data$SERIE12)}
+  if (any(names(series) == "SERIE13")) {hc <- hc %>% hc_add_series(name = series[["SERIE13"]], data = data$SERIE13)}
+  if (any(names(series) == "SERIE14")) {hc <- hc %>% hc_add_series(name = series[["SERIE14"]], data = data$SERIE14)}
+  if (any(names(series) == "SERIE15")) {hc <- hc %>% hc_add_series(name = series[["SERIE15"]], data = data$SERIE15)}
+  if (any(names(series) == "SERIE16")) {hc <- hc %>% hc_add_series(name = series[["SERIE16"]], data = data$SERIE16)}
   if (any(names(series) == "SERIE_TYPE")) {hc <- hc %>% hc_add_series(name = series[["SERIE_TYPE"]], data = data$SERIE_TYPE, type = serie_type)}
     if (any(names(series) == "SERIE_RAP")) {
       if (input_plot[["typeplot"]] == "areaspline"){
