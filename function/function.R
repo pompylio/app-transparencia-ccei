@@ -109,17 +109,6 @@ extract_orc <- function(file, reference){
   return(db)
 }
 
-import_multi_files <- function(local,file){
-  require(dplyr)
-  f <- list.files(path = local,pattern = file,full.names = TRUE)
-  db <- readRDS(f[1])
-  for(i in 2:length(f)){
-    db1 <- readRDS(f[i])
-    db <- bind_rows(db,db1)
-  }
-  return(db)
-}
-
 extract_redmine <- function(pool_connect, select_project, year_project, col_names, col_select, select_custom_values){
   require(pool)
   require(RMySQL)
@@ -266,358 +255,6 @@ import_data <- function(pasta = "data/", extensao = "rds"){
   list2env(lapply(setNames(temp, make.names(gsub(paste0("*.", extensao, "$"), "", temp))), readRDS2), envir = .GlobalEnv)
 }
 
-# REDMINE -----------------------------------------------------------------
-
-aca_sit_ger <- function(database, department, year){
-  if(missing(database)){
-    if(exists("sgi",where = 1)){
-      database <- sgi
-    }else{
-      message("missing 'database' input")
-    }
-  }
-  if(missing(department)){
-    d <- unique(database$department)
-    if(missing(year)){
-      y <- unique(database$year)
-    }else{
-      y <- year
-    }
-    db0 <- database %>%
-      filter(name == "Acao" & name1 == "Indicador",department %in% d, year %in% y) %>%
-      group_by(Grupo = ifelse(substr(department,1,1)=="C","Campus","Reitoria"),Unidade = department,Tipo = correct_status) %>%
-      summarise(Valor= n())
-    db1 <- database %>%
-      filter(name == "Acao" & name1 == "Indicador",department %in% d, year %in% y) %>%
-      group_by(Grupo = "IFB",Unidade = "IFB",Tipo = correct_status) %>%
-      summarise(Valor= n())
-    db <- bind_rows(db0,db1)
-  }else{
-    d <- department
-    if(missing(year)){
-      y <- unique(database$year)
-    }else{
-      y <- year
-    }
-    db <- database %>%
-      filter(name == "Acao" & name1 == "Indicador",department %in% d, year %in% y) %>%
-      group_by(Grupo = ifelse(substr(department,1,1)=="C","Campus","Reitoria"),Unidade = department,Tipo = correct_status) %>%
-      summarise(Valor= n())
-  }
-  return(db)
-}
-
-aca_sit_res <- function(database, department, type, year){
-  if(missing(database)){
-    if(exists("sgi",where = 1)){
-      database <- sgi
-    }else{
-      message("missing 'database' input")
-    }
-  }
-  if(missing(department)){
-    d <- unique(database$department)
-    if(missing(year)){
-      y <- unique(database$year)
-    }else{
-      y <- year
-    }
-    if(type == "Envolvido"){
-      db0 <- database %>%
-        filter(name == "Acao" & name1 == "Indicador",department %in% d, year %in% y) %>%
-        group_by(Grupo = "Envolvido",Unidade = department,Responsavel = assign,Tipo = correct_status) %>%
-        summarise(Valor= n())
-      db1 <- database %>%
-        filter(name == "Acao" & name1 == "Indicador",department %in% d, year %in% y) %>%
-        group_by(Grupo = "Envolvido",Unidade = department,Responsavel = assign,Tipo = correct_status) %>%
-        summarise(Valor= n())
-      db <- bind_rows(db0,db1)
-    }else if(type == "Setor"){
-      db0 <- database %>%
-        filter(name == "Acao" & name1 == "Indicador",department %in% d, year %in% y) %>%
-        group_by(Grupo = "Setor",Unidade = department,Responsavel = department_initials,Tipo = correct_status) %>%
-        summarise(Valor= n())
-      db1 <- database %>%
-        filter(name == "Acao" & name1 == "Indicador",department %in% d, year %in% y) %>%
-        group_by(Grupo = "Setor",Unidade = department,Responsavel = department_initials,Tipo = correct_status) %>%
-        summarise(Valor= n())
-      db <- bind_rows(db0,db1)
-    }
-  }else{
-    d <- department
-    if(missing(year)){
-      y <- unique(database$year)
-    }else{
-      y <- year
-    }
-    if(type == "Envolvido"){
-      db <- database %>%
-        filter(name == "Acao" & name1 == "Indicador",department %in% d, year %in% y) %>%
-        group_by(Grupo = "Envolvido",Unidade = department,Responsavel = assign,Tipo = correct_status) %>%
-        summarise(Valor= n())
-    }else if(type == "Setor"){
-      db <- database %>%
-        filter(name == "Acao" & name1 == "Indicador",department %in% d, year %in% y) %>%
-        group_by(Grupo = "Setor",Unidade = department,Responsavel = department_initials,Tipo = correct_status) %>%
-        summarise(Valor= n())
-    }
-  }
-  return(db)
-}
-
-ind_sit_ger <- function(database, department, col_select, year){
-  if(missing(database)){
-    if(exists("sgi",where = 1)){
-      database <- sgi
-    }else{
-      message("missing 'database' input")
-    }
-  }
-  if(missing(department)){
-    d <- unique(database$department)
-    if(missing(year)){
-      y <- unique(database$year)
-    }else{
-      y <- year
-    }
-    db <- database %>%
-      filter(name1 == "Indicador",name == "Indicador",year %in% y) %>%
-      group_by(Indicador = subject, Cod_Indicador = substr(subject,1,5), Percentual = done_ratio) %>%
-      summarise()
-  }else{
-    d <- department
-    if(missing(year)){
-      y <- unique(database$year)
-    }else{
-      y <- year
-    }
-    db <- database %>%
-      filter(name1 == "Indicador",name == "Indicador",department %in% d,year %in% y) %>%
-      group_by(Indicador = subject, Cod_Indicador = substr(subject,1,5), Percentual = done_ratio) %>%
-      summarise()
-  }
-  if(!missing(col_select)){
-    db <- db[,c(col_select)]
-  }
-  return(db)
-}
-
-orc_cla_uni <- function(database, department, year, reference, melt, ...){
-  require(dplyr)
-  require(reshape2)
-  if(missing(database)){
-    if(exists("orc",where = 1)){
-      database <- db
-    }else{
-      message("missing 'database' input")
-    }
-  }
-  if(missing(department)){
-    d <- unique(database$UGE_SIGLA)
-    if(missing(year)){
-      y <- unique(database$ANO)
-    }else{
-      y <- year
-    }
-    if(missing(reference)){
-      r <- unique(database$REFERENCIA)
-    }else{
-      r <- reference
-    }
-    db <- database %>%
-      filter(ANO %in% y,REFERENCIA %in% r) %>%
-      group_by(ANO,DATA,REFERENCIA,UGE_SIGLA,...,CLASSIFICACAO) %>%
-      summarise(DOTACAO_ATUALIZADA = sum(DOTACAO_ATUALIZADA,na.rm = TRUE),
-                DESPESAS_EMPENHADAS = sum(DESPESAS_EMPENHADAS,na.rm = TRUE),
-                DESPESAS_LIQUIDADAS = sum(DESPESAS_LIQUIDADAS,na.rm = TRUE),
-                DESPESAS_PAGAS = sum(DESPESAS_PAGAS,na.rm = TRUE))
-  }else{
-    d <- department
-    if(missing(year)){
-      y <- unique(database$ANO)
-    }else{
-      y <- year
-    }
-    if(missing(reference)){
-      r <- unique(database$REFERENCIA)
-    }else{
-      r <- reference
-    }
-    db <- database %>%
-      filter(ANO %in% y,REFERENCIA %in% r,UGE_SIGLA %in% d) %>%
-      group_by(ANO,REFERENCIA,UGE_SIGLA,...,CLASSIFICACAO) %>%
-      summarise(DOTACAO_ATUALIZADA = sum(DOTACAO_ATUALIZADA,na.rm = TRUE),
-                DESPESAS_EMPENHADAS = sum(DESPESAS_EMPENHADAS,na.rm = TRUE),
-                DESPESAS_LIQUIDADAS = sum(DESPESAS_LIQUIDADAS,na.rm = TRUE),
-                DESPESAS_PAGAS = sum(DESPESAS_PAGAS,na.rm = TRUE))
-  }
-  if(melt == TRUE){
-    col <- c("DOTACAO_ATUALIZADA","DESPESAS_EMPENHADAS","DESPESAS_LIQUIDADAS","DESPESAS_PAGAS")
-    db <- melt(data = db,id.vars = colnames(db[,!names(db) %in% col]),measure.vars = col,variable.name = "TIPO_VALOR",value.name = "VALOR")
-  }
-  return(db)
-}
-
-
-# SIAPE -------------------------------------------------------------------
-
-siape_base <- function(data){
-  data[, sapply(data, class) == "character"] <-
-    apply(
-      X = data[, sapply(data, class) == "character"],
-      MARGIN = 2,
-      FUN = function (y) {
-        iconv(x = y, from = "latin1", to = "UTF-8")
-      }
-    )
-  data <- left_join(data, tb_uorg, by = "COD_UORG_LOTACAO")
-  data[is.na(data$UORG_LOTACAO_GRUPO), ]$UORG_LOTACAO_GRUPO <- "OUTROS"
-  data$FUNCAO_NIVEL <- paste(data$SIGLA_FUNCAO, data$NIVEL_FUNCAO)
-  return(data)
-}
-
-siape_quadro <- function(data){
-  doc <- data %>%
-    filter(SIGLA_FUNCAO == "-1", COD_ORG_LOTACAO == "26428", grepl("\\<PROF", DESCRICAO_CARGO)) %>% 
-    group_by(REFERENCIA = substr(REFERENCIA, 1, 6), UORG_LOTACAO_GRUPO, TIPO = "DOCENTE") %>%
-    summarise(TOTAL = n())
-  tec <- data %>%
-    filter(SIGLA_FUNCAO == "-1", COD_ORG_LOTACAO == "26428", !grepl("\\<PROF", DESCRICAO_CARGO)) %>% 
-    group_by(REFERENCIA = substr(REFERENCIA, 1, 6), UORG_LOTACAO_GRUPO, TIPO = "TECNICO") %>%
-    summarise(TOTAL = n())
-  db <- bind_rows(doc, tec) %>% spread(key = TIPO, value = TOTAL, fill = 0)
-  db$TOTAL <- db$DOCENTE + db$TECNICO
-  if(any(is.na(db$DOCENTE))) db[is.na(db$DOCENTE), ]$DOCENTE <- 0
-  if(any(is.na(db$TECNICO))) db[is.na(db$TECNICO), ]$TECNICO <- 0
-  if(any(is.na(db$TOTAL)))   db[is.na(db$TOTAL), ]$TOTAL <- 0
-  return(db)
-}
-
-siape_cargo <- function(data){
-  doc <- data %>%
-    filter(SIGLA_FUNCAO == "-1", COD_ORG_LOTACAO == "26428", grepl("\\<PROF", DESCRICAO_CARGO)) %>% 
-    group_by(
-      REFERENCIA = substr(REFERENCIA, 1, 6),
-      UORG_LOTACAO_GRUPO,
-      TIPO_CARGO = "DOCENTE",
-      DESCRICAO_CARGO) %>%
-    summarise(TOTAL = n())
-  tec <- data %>%
-    filter(SIGLA_FUNCAO == "-1", COD_ORG_LOTACAO == "26428", !grepl("\\<PROF", DESCRICAO_CARGO)) %>%
-    group_by(
-      REFERENCIA = substr(REFERENCIA, 1, 6),
-      UORG_LOTACAO_GRUPO,
-      TIPO_CARGO = "TECNICO",
-      DESCRICAO_CARGO) %>%
-    summarise(TOTAL = n())
-  db <- bind_rows(tec, doc)
-  return(db)
-}
-
-siape_jornada <- function(data){
-  doc <- data %>%
-    filter(SIGLA_FUNCAO == "-1", COD_ORG_LOTACAO == "26428", grepl("\\<PROF", DESCRICAO_CARGO)) %>%
-    group_by(
-      REFERENCIA = substr(REFERENCIA, 1, 6),
-      UORG_LOTACAO_GRUPO,
-      JORNADA_DE_TRABALHO) %>%
-    summarise(DOCENTE = n())
-  tec <- data %>%
-    filter(SIGLA_FUNCAO == "-1", COD_ORG_LOTACAO == "26428", !grepl("\\<PROF", DESCRICAO_CARGO)) %>%
-    group_by(
-      REFERENCIA = substr(REFERENCIA, 1, 6),
-      UORG_LOTACAO_GRUPO,
-      JORNADA_DE_TRABALHO) %>%
-    summarise(TECNICO = n())
-  db <- left_join(doc, tec, by = c("REFERENCIA", "JORNADA_DE_TRABALHO", "UORG_LOTACAO_GRUPO"))
-  db$TOTAL <- db$DOCENTE + db$TECNICO
-  if(any(is.na(db$DOCENTE))) db[is.na(db$DOCENTE), ]$DOCENTE <- 0
-  if(any(is.na(db$TECNICO))) db[is.na(db$TECNICO), ]$TECNICO <- 0
-  if(any(is.na(db$TOTAL)))   db[is.na(db$TOTAL), ]$TOTAL <- 0
-  return(db)
-}
-
-siape_rotatividade <- function(data, ref_ini, ref_end, group_by, sit_vinculo, sig_funcao){
-  if (nchar(ref_ini) < 8) ref_ini <- unique(data[grepl(pattern = ref_ini, x = data$REFERENCIA), ]$REFERENCIA)
-  if (nchar(ref_end) < 8) ref_end <- unique(data[grepl(pattern = ref_end, x = data$REFERENCIA), ]$REFERENCIA)
-  if (missing(sit_vinculo)) sit_vinculo <- "ATIVO PERMANENTE"
-  if (missing(sig_funcao)) sig_funcao <- "-1"
-  if (any(sig_funcao == "-1")) db <- data %>% filter(COD_ORG_LOTACAO == "26428", SITUACAO_VINCULO %in% sit_vinculo, SIGLA_FUNCAO %in% sig_funcao)
-  else                         db <- data %>% filter(COD_ORG_EXERCICIO == "26428", SITUACAO_VINCULO %in% sit_vinculo, SIGLA_FUNCAO %in% sig_funcao)
-  db1 <- db %>%
-    filter(REFERENCIA == ref_ini) %>% 
-    group_by_at(vars("REFERENCIA", "Id_SERVIDOR_PORTAL", group_by)) %>% 
-    summarise()
-  db2 <- db %>%
-    filter(REFERENCIA == ref_end) %>% 
-    group_by_at(vars("REFERENCIA", "Id_SERVIDOR_PORTAL", group_by)) %>%  
-    summarise()
-  db_saida <- left_join(x = db1, y = db2, by = "Id_SERVIDOR_PORTAL", suffix = c("", "_FIM"))
-  db_saida <- db_saida %>% 
-    filter(is.na(REFERENCIA_FIM)) %>% 
-    group_by_at(.vars = group_by) %>%
-    summarise(TOTAL = n()) %>% 
-    mutate(INICIO = ref_ini, FIM = ref_end, TIPO = "DESLIGAMENTO")
-  db_entrada <- left_join(x = db2, y = db1, by = "Id_SERVIDOR_PORTAL", suffix = c("", "_FIM"))
-  db_entrada <- db_entrada %>% 
-    filter(is.na(REFERENCIA_FIM)) %>% 
-    group_by_at(.vars = group_by) %>%
-    summarise(TOTAL = n())%>% 
-    mutate(INICIO = ref_ini, FIM = ref_end, TIPO = "ADMISSAO")
-  db <- bind_rows(db_saida, db_entrada)
-  return(db)
-}
-
-siape_rotatividade_acumulada <- function(data, ref_ini, ref_end, group_by, sit_vinculo, sig_funcao){
-  if (nchar(ref_ini) < 8) 
-    ref_ini <- unique(data[grepl(pattern = ref_ini, x = data$REFERENCIA), ]$REFERENCIA)
-  if (nchar(ref_end) < 8) 
-    ref_end <- unique(data[grepl(pattern = ref_end, x = data$REFERENCIA), ]$REFERENCIA)
-  ref <- unique(data$REFERENCIA)[which(unique(data$REFERENCIA) == ref_ini):which(unique(data$REFERENCIA) == ref_end)]
-  db <- siape_rotatividade(data = data, ref_ini = ref[1], ref_end = ref[2], group_by = group_by, sit_vinculo = sit_vinculo, sig_funcao = sig_funcao)  
-  i <- 2
-  while(i < length(ref)){
-    db0 <- siape_rotatividade(data = data, ref_ini = ref[i], ref_end = ref[i+1], group_by = group_by, sit_vinculo = sit_vinculo, sig_funcao = sig_funcao)
-    db <- bind_rows(db, db0)
-    i = i + 1
-  }
-  return(db)
-}
-siape_distribuicao_cargo <- function(data){
-  efe <- data %>%
-    filter(SIGLA_FUNCAO == "-1", COD_ORG_EXERCICIO == "26428") %>%
-    group_by(REFERENCIA, UORG_LOTACAO_GRUPO, TIPO_CARGO = ifelse(grepl("\\<PROF", DESCRICAO_CARGO), "DOCENTE", "TECNICO"),
-             DESCRICAO_CARGO, Id_SERVIDOR_PORTAL, ORG_ORIGEM = ifelse(COD_ORG_LOTACAO == "26428", "IFB", "OUTRO")) %>%
-    summarise()
-  com <- data %>%
-    filter(!SIGLA_FUNCAO == "-1", COD_ORG_EXERCICIO == "26428") %>%
-    group_by(REFERENCIA, FUNCAO = paste(SIGLA_FUNCAO, NIVEL_FUNCAO), Id_SERVIDOR_PORTAL) %>%
-    summarise() %>%
-    left_join(efe, by = c("REFERENCIA", "Id_SERVIDOR_PORTAL")) %>% 
-    group_by(REFERENCIA, UORG_LOTACAO_GRUPO, ORG_ORIGEM, FUNCAO, TIPO_CARGO) %>% 
-    summarise(TOTAL = n())
-  if(any(is.na(com$TIPO_CARGO))) com[is.na(com$TIPO_CARGO), ]$TIPO_CARGO <- "EXTERNO"
-  if(any(is.na(com$ORG_ORIGEM))) com[is.na(com$ORG_ORIGEM), ]$ORG_ORIGEM <- "EXTERNO"
-  return(com)
-}
-
-# SIAFI -------------------------------------------------------------------
-
-siafi_classificacao <- function(data, group, sum_by){
-  if(missing(group))
-    group <- c("LANCAMENTO", "SG_UG", "CLASSIFICACAO")
-  else
-    group <- c("LANCAMENTO", "SG_UG", "CLASSIFICACAO", group)
-  if(missing(sum_by))
-    sum_by <- c("DESPESAS_EMPENHADAS", "DESPESAS_LIQUIDADAS", "DESPESAS_PAGAS", "RAP_PAGO")
-  else
-    sum_by <- c("DESPESAS_EMPENHADAS", "DESPESAS_LIQUIDADAS", "DESPESAS_PAGAS", "RAP_PAGO", summarise)
-  db <- db_siafi_tg %>% 
-    group_by_at(vars(group)) %>% 
-    summarise_at(vars(sum_by), .funs = sum)
-  return(db)
-}
-
 # SHINY -------------------------------------------------------------------
 
 boxnew <- function(inputId, boxtitle, menu_selected, label, choices, selected, status, width_box, plot_highchart, description){
@@ -702,12 +339,12 @@ boxnew <- function(inputId, boxtitle, menu_selected, label, choices, selected, s
         collapsible = TRUE, 
         closable = FALSE,
         enable_sidebar = TRUE,
-        sidebar_width = 100,
+        sidebar_width = 50,
         sidebar_background = "#ffffff",
         sidebar_start_open = FALSE,
         sidebar_content = tagList(
-          column(
-            width = 6,
+          #column(
+           # width = 6,
             strong(p(color = "black", "Configuração:")),
             if(any(menu_selected == "typeplot")){typeplot}else{NULL},
             if(any(menu_selected == "groupplot")){groupplot}else{NULL},
@@ -719,12 +356,12 @@ boxnew <- function(inputId, boxtitle, menu_selected, label, choices, selected, s
             if(any(menu_selected == "selectY")){selectY}else{NULL},
             if(any(menu_selected == "filterx")){filterx}else{NULL},
             if(any(menu_selected == "filtery")){filtery}else{NULL}
-          ),
-          column(
-            width = 6,
-            strong(p("Descrição do gráfico:")),
-            p(align = "justify", if(missing(description)){""}else{HTML(paste(description, collapse = "<br/>"))})
-          )
+         # ),
+         # column(
+         #   width = 6,
+         #   strong(p("Descrição do gráfico:")),
+        #    p(align = "justify", if(missing(description)){""}else{HTML(paste(description, collapse = "<br/>"))})
+          #)
           
         ),
         shinycssloaders::withSpinner(highchartOutput(paste0("plot",inputId)),type = 8L,color = "#3c8dbc")
@@ -749,44 +386,6 @@ hcoptslang <- function(){
   hcoptslang$printChart <- "Imprimir"
   hcoptslang$viewData <- "Ver dados"
   return(hcoptslang)
-}
-
-HighchartOrc <- function(data, series, subtitle, credits, categories, input_plot){
-  hc <- highchart() %>%
-    hc_title(text = "") %>%
-    hc_subtitle(text = subtitle) %>%
-    hc_yAxis(title = list(text = "")) %>%
-    hc_xAxis(title = list(text = ""), categories = c(list(categories)[[1]], categories)) %>%
-    hc_exporting(enabled = TRUE)
-  if (any(series == "EMPENHADO")) hc <- hc %>% hc_add_series(name = "EMPENHADO", data = data$EMPENHADO, type = input_plot[["typeplot"]])
-  if (any(series == "LIQUIDADO")) hc <- hc %>% hc_add_series(name = "LIQUIDADO", data = data$LIQUIDADO, type = input_plot[["typeplot"]])
-  if (any(series == "PAGO"))      hc <- hc %>% hc_add_series(name = "PAGO", data = data$PAGO, type = input_plot[["typeplot"]]) 
-  if (any(series == "RAP_PAGO")){
-    if(input_plot[["typeplot"]] == "areaspline"){
-        hc <- hc %>% hc_add_series(name = "RAP PAGO", data = data$RAP_PAGO, type = "spline")
-      } else {
-        hc <- hc %>% hc_add_series(name = "RAP PAGO", data = data$RAP_PAGO, type = input_plot[["typeplot"]])
-      }
-    }
-  if (any(series == "TOTAL"))   hc <- hc %>% hc_add_series(name = "TOTAL", data = data$TOTAL, type = input_plot[["typeplot"]])
-  if (any(series == "DOCENTE")) hc <- hc %>% hc_add_series(name = "DOCENTES", data = data$DOCENTE, type = input_plot[["typeplot"]])
-  if (any(series == "TECNICO")) hc <- hc %>% hc_add_series(name = "TÉCNICOS", data = data$TECNICO, type =  input_plot[["typeplot"]])
-  if(input_plot[["dimension"]] == TRUE){
-    hc <- hc %>% 
-      hc_chart(options3d = list(enabled = input_plot[["dimension"]], beta = 10, alpha = 10))
-    }
-  if (input_plot[["groupplot"]] != FALSE) {
-    hc <- hc %>% 
-      hc_plotOptions(series = list(stacking = input_plot[["groupplot"]]))
-  }
-  if (input_plot[["groupplot"]] == "percent"){
-    hc <- hc %>% hc_tooltip(pointFormat = '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.percentage:.0f}%)<br/>')
-  }
-  if (!missing(credits)){
-    href <- ifelse(credits == "Portal da Transparência", "http://portaltransparencia.gov.br/download-de-dados","")
-    hc <- hc %>% hc_credits(enabled = TRUE, text = paste("Fonte:", credits), href = href)
-  }
-  hc
 }
 
 highchart_new <- function(data, categories, series, subtitle, credits, input_plot, serie_type, origin, colors){
@@ -842,8 +441,15 @@ highchart_new <- function(data, categories, series, subtitle, credits, input_plo
   hc
 }
 
-
-
+hccolor <- list(exeorc = list(emp = "#3c8dbc", liq = "#00a65a", pag = "#dd4b39", rap = "#f39c12"),
+                desexe = list(pag = "#263238", rap = "#4f5b62"),
+                pesevo = list(tot = "#455a64", doc = "#3c8dbc", tec = "#00a65a"),
+                pessch = list(h20 = "#c6d9ec", h25 = "#8cb3d9", h30 = "#4080bf", h40 = "#264d73", hde = "#0d1a26"),
+                palblu = list(blu100 = "#ffffff", blu95 = "#ecf4f9", blu90 = "#d8e9f3", blu85 = "#c5deed", blu80 = "#b1d3e7", blu75 = "#9ec8e0", blu70 = "#8bbdda", blu65 = "#77b2d4", blu60 = "#64a7ce", blu55 = "#519cc8", blu50 = "#3d91c2", blu49 = "#3c8dbc", blu45 = "#3783ae", blu40 = "#31749b", blu35 = "#2b6688", blu30 = "#255774", blu25 = "#1f4961", blu20 = "#183a4e", blu15 = "#122c3a", blu10 = "#0c1d27", blu05 = "#060f13", blu00 = "#000000"),
+                palgre = list(gre100 = '#ffffff', gre95 = '#e6fff4', gre90 = '#ccffe8', gre85 = '#b3ffdd', gre80 = '#99ffd1', gre75 = '#80ffc6', gre70 = '#66ffba', gre65 = '#4dffaf', gre60 = '#33ffa3', gre55 = '#1aff98', gre50 = '#00ff8c', gre45 = '#00e67e', gre40 = '#00cc70', gre35 = '#00b362', gre33 = '#00a65a', gre30 = '#009954', gre25 = '#008046', gre20 = '#006638', gre15 = '#004d2a', gre10 = '#00331c', gre05 = '#001a0e', gre0 = '#000000'),
+                palred = list(red100 = '#ffffff', red95 = '#fbebe9', red90 = '#f8d8d3', red85 = '#f4c4be', red80 = '#f0b0a8', red75 = '#ed9d92', red70 = '#e9897c', red65 = '#e57566', red60 = '#e16151', red55 = '#dd4b39', red50 = '#da3a25', red45 = '#c43421', red40 = '#ae2e1e', red35 = '#99291a', red30 = '#832316', red25 = '#6d1d12', red20 = '#57170f', red15 = '#41110b', red10 = '#2c0c07', red05 = '#160604', red0 = '#000000'),
+                palyel = list(yel100 = '#ffffff', yel95 = '#fef5e7', yel90 = '#fcebcf', yel85 = '#fbe1b6', yel80 = '#fad79e', yel75 = '#f9cd86', yel70 = '#f7c36e', yel65 = '#f6b855', yel60 = '#f5ae3d', yel55 = '#f4a425', yel51 = '#f39c12', yel50 = '#f29a0d', yel45 = '#da8b0b', yel40 = '#c27b0a', yel35 = '#aa6c09', yel30 = '#915d08', yel25 = '#794d06', yel20 = '#613e05', yel15 = '#492e04', yel10 = '#301f03', yel05 = '#180f01', yel00 = '#000000'),
+                palgra = list(gra100 = "#ffffff", gra95 = "#f0f3f5", gra90 = "#e1e7ea", gra85 = "#d1dbe0", gra80 = "#c2d0d6", gra75 = "#b3c4cb", gra70 = "#a4b8c1", gra65 = "#95acb7", gra60 = "#86a0ac", gra55 = "#7694a2", gra50 = "#678898", gra45 = "#5d7b89", gra40 = "#536d79", gra35 = "#485f6a", gra30 = "#3e525b", gra25 = "#34444c", gra20 = "#29373d", gra16 = "#222d32", gra15 = "#1f292e", gra10 = "#151b1e", gra5 = "#0a0e0f", gra0 = "#000000"))
 
 
 
