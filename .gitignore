@@ -9,3 +9,5 @@ data/
 modules/
 packrat/
 security/
+packrat/lib*/
+packrat/src/
