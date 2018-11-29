@@ -501,7 +501,7 @@ ui <-
         selectInput(
           inputId = "geral_unidade", 
           label = "Unidade", 
-          choices = c("IFB", unique(db_siafi[order(db_siafi$SIGLA_UNIDADE_GESTORA),]$SIGLA_UNIDADE_GESTORA)), #CONSIDERAR ESCOLHAS DE PESSOAL
+          choices = c("IFB", "CCEI"),#, unique(db_siafi[order(db_siafi$SIGLA_UNIDADE_GESTORA),]$SIGLA_UNIDADE_GESTORA)), #CONSIDERAR ESCOLHAS DE PESSOAL
           selected = "CCEI"),
         selectInput(
           inputId = "geral_exercicio",
@@ -558,7 +558,7 @@ server <-
             SERIE_RAP = sum(RAP_PAGO, na.rm = TRUE))
         }else{
           ano <- unique(substr(db_siafi[db_siafi$SIGLA_UNIDADE_GESTORA == input$geral_unidade, ]$LANCAMENTO, 1, 4))
-          if (input$geral_unidade == "CCEI") ano <- ano[!ano == "2ORC016"]
+          if (input$geral_unidade == "CCEI") ano <- ano[!ano == "2016"]
           db <- db_siafi %>%
             filter(
               CODIGO_GRUPO_DE_DESPESA %in% c(input$grupodespesa), 
@@ -1291,7 +1291,7 @@ server <-
           text = paste("Fonte:", "Portal da Transparência"),
           href = "http://portaltransparencia.gov.br/download-de-dados") %>% 
         hc_title(
-          text = paste(input$geral_unidade, "-", max(paste0(substr(db_siape$DATA_REFERENCIA, 1 , 4),"/",substr(db_siape$DATA_REFERENCIA, 5, 6)))),
+          text = paste(input$geral_unidade, "-", max(paste0(substr(db_siape$DATA_REFERENCIA, 1 , 4),"/",substr(db_siape$DATA_REFERENCIA, 6, 7)))),
           style = list(fontSize = "12px"))
     })
     # PES06 Servidores por situação do vínculo ----
@@ -1338,7 +1338,7 @@ server <-
           text = paste("Fonte:", "Portal da Transparência"), 
           href = "http://portaltransparencia.gov.br/download-de-dados") %>% 
         hc_title(
-          text = paste(input$geral_unidade, "-", max(paste0(substr(db_siape$DATA_REFERENCIA, 1 , 4),"/",substr(db_siape$DATA_REFERENCIA, 5, 6)))),
+          text = paste(input$geral_unidade, "-", max(paste0(substr(db_siape$DATA_REFERENCIA, 1 , 4),"/",substr(db_siape$DATA_REFERENCIA, 6, 7)))),
           style = list(fontSize = "12px"))
     })
     # PES07 Servidores por unidade de exercício ----
@@ -1385,7 +1385,7 @@ server <-
           text = paste("Fonte:", "Portal da Transparência"), 
           href = "http://portaltransparencia.gov.br/download-de-dados") %>% 
         hc_title(
-          text = paste(input$geral_unidade, "-", max(paste0(substr(db_siape$DATA_REFERENCIA, 1 , 4),"/",substr(db_siape$DATA_REFERENCIA, 5, 6)))),
+          text = paste(input$geral_unidade, "-", max(paste0(substr(db_siape$DATA_REFERENCIA, 1 , 4),"/",substr(db_siape$DATA_REFERENCIA, 6, 7)))),
           style = list(fontSize = "12px"))
     })
     
@@ -1423,7 +1423,7 @@ server <-
     output$plotPES08 <- renderHighchart({
       hc <- highchart() %>%
         hc_title(text = "") %>%
-        hc_subtitle(text = paste(input$geral_unidade, "-", max(paste0(substr(db_siape$DATA_REFERENCIA, 1 , 4),"/",substr(db_siape$DATA_REFERENCIA, 5, 6))))) %>%
+        hc_subtitle(text = paste(input$geral_unidade, "-", max(paste0(substr(db_siape$DATA_REFERENCIA, 1 , 4),"/",substr(db_siape$DATA_REFERENCIA, 6, 7))))) %>%
         hc_yAxis(title = list(text = "")) %>%
         hc_xAxis(title = list(text = "")) %>% 
         hc_chart(type = 'pie', options3d = list(enabled = TRUE, alpha = 45)) %>% 
@@ -1475,7 +1475,7 @@ server <-
     output$plotPES09 <- renderHighchart({
       hc <- highchart() %>%
         hc_title(text = "") %>%
-        hc_subtitle(text = paste(input$geral_unidade, "-", max(paste0(substr(db_siape$DATA_REFERENCIA, 1 , 4),"/",substr(db_siape$DATA_REFERENCIA, 5, 6))))) %>%
+        hc_subtitle(text = paste(input$geral_unidade, "-", max(paste0(substr(db_siape$DATA_REFERENCIA, 1 , 4),"/",substr(db_siape$DATA_REFERENCIA, 6, 7))))) %>%
         hc_yAxis(title = list(text = "")) %>%
         hc_xAxis(title = list(text = "")) %>% 
         hc_chart(type = 'pie', options3d = list(enabled = TRUE, alpha = 45)) %>% 
@@ -1536,7 +1536,7 @@ server <-
       highchart_new(
         data = dbpPES10(),
         series = c(SERIE1 = "Padrão 1", SERIE2 = "Padrão 2", SERIE3 = "Padrão 3", SERIE4 = "Padrão 4"),
-        subtitle = paste(input$geral_unidade, "-", max(paste0(substr(db_siape$DATA_REFERENCIA, 1 , 4),"/",substr(db_siape$DATA_REFERENCIA, 5, 6)))),
+        subtitle = paste(input$geral_unidade, "-", max(paste0(substr(db_siape$DATA_REFERENCIA, 1 , 4),"/",substr(db_siape$DATA_REFERENCIA, 6, 7)))),
         categories = dbpPES10()$CLASSE,
         credits = "Portal da Transparência",
         input_plot = c(
@@ -1579,7 +1579,7 @@ server <-
     output$plotPES11 <- renderHighchart({
       hc <- highchart() %>%
         hc_title(text = "") %>%
-        hc_subtitle(text = paste(input$geral_unidade, "-", max(paste0(substr(db_siape$DATA_REFERENCIA, 1 , 4),"/",substr(db_siape$DATA_REFERENCIA, 5, 6))))) %>%
+        hc_subtitle(text = paste(input$geral_unidade, "-", max(paste0(substr(db_siape$DATA_REFERENCIA, 1 , 4),"/",substr(db_siape$DATA_REFERENCIA, 6, 7))))) %>%
         hc_yAxis(title = list(text = "")) %>%
         hc_xAxis(title = list(text = "")) %>% 
         hc_chart(type = 'pie', options3d = list(enabled = TRUE, alpha = 45)) %>% 
@@ -1629,7 +1629,7 @@ server <-
     output$plotPES12 <- renderHighchart({
       hc <- highchart() %>%
         hc_title(text = "") %>%
-        hc_subtitle(text = paste(input$geral_unidade, "-", max(paste0(substr(db_siape$DATA_REFERENCIA, 1 , 4),"/",substr(db_siape$DATA_REFERENCIA, 5, 6))))) %>%
+        hc_subtitle(text = paste(input$geral_unidade, "-", max(paste0(substr(db_siape$DATA_REFERENCIA, 1 , 4),"/",substr(db_siape$DATA_REFERENCIA, 6, 7))))) %>%
         hc_yAxis(title = list(text = "")) %>%
         hc_xAxis(title = list(text = "")) %>% 
         hc_chart(type = 'pie', options3d = list(enabled = TRUE, alpha = 45)) %>% 
@@ -1691,7 +1691,7 @@ server <-
       highchart_new(
         data = dbpPES13(),
         series = c(SERIE1 = "Nível Capacitação I", SERIE2 = "Nível Capacitação II", SERIE3 = "Nível Capacitação III", SERIE4 = "Nível Capacitação IV"),
-        subtitle = paste(input$geral_unidade, "-", max(paste0(substr(db_siape$DATA_REFERENCIA, 1 , 4),"/",substr(db_siape$DATA_REFERENCIA, 5, 6)))),
+        subtitle = paste(input$geral_unidade, "-", max(paste0(substr(db_siape$DATA_REFERENCIA, 1 , 4),"/",substr(db_siape$DATA_REFERENCIA, 6, 7)))),
         categories = dbpPES13()$PADRAO_CARGO,
         credits = "Portal da Transparência",
         input_plot = c(
@@ -1896,7 +1896,7 @@ server <-
       highchart_new(
         data = dbpPES18(),
         series = c(SERIE1 = "Admissão (Docente)", SERIE2 = "Admissão (Técnico)", SERIE3 = "Desligamento (Docente)", SERIE4 = "Desligamento (Técnico)"),
-        subtitle = paste(input$geral_unidade, "-", min(dbpPES13()$DATA_REFERENCIA), "a", max(dbpPES13()$DATA_REFERENCIA)),
+        subtitle = paste(input$geral_unidade, "-", min(dbpPES18()$DATA_REFERENCIA), "a", max(dbpPES18()$DATA_REFERENCIA)),
         categories = dbpPES18()$DATA_REFERENCIA,
         credits = "Portal da Transparência",
         input_plot = c(
@@ -1940,7 +1940,7 @@ server <-
       highchart_new(
         data = dbpPES19(),
         series = c(SERIE1 = "Admissões", SERIE2 = "Desligamentos"),
-        subtitle = paste(input$geral_unidade, "-", min(dbpPES13()$DATA_REFERENCIA), "a", max(dbpPES13()$DATA_REFERENCIA)),
+        subtitle = paste(input$geral_unidade, "-", min(dbpPES19()$DATA_REFERENCIA), "a", max(dbpPES19()$DATA_REFERENCIA)),
         categories = dbpPES19()$DATA_REFERENCIA,
         credits = "Portal da Transparência",
         input_plot = c(
@@ -2021,7 +2021,7 @@ server <-
       highchart_new(
         data = dbpPES20(),  
         series = c(SERIE1 = "Admissão (Temporário)", SERIE2 = "Admissão (Substituto)", SERIE3 = "Desligamento (Temporário)", SERIE4 = "Desligamento (Substituto)"),
-        subtitle = paste(input$geral_unidade, "-", min(dbpPES13()$DATA_REFERENCIA), "a", max(dbpPES13()$DATA_REFERENCIA)),
+        subtitle = paste(input$geral_unidade, "-", min(dbpPES20()$DATA_REFERENCIA), "a", max(dbpPES20()$DATA_REFERENCIA)),
         categories = dbpPES20()$DATA_REFERENCIA,
         credits = "Portal da Transparência",
         input_plot = c(
