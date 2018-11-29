@@ -1,7 +1,6 @@
 .httr-oauth
 .httr-oauth-SUSPENDED
 .Rbuildignore
-.Rprofile
 .Rproj.user
 .Rhistory
 .Ruserdata
