@@ -87,6 +87,21 @@ ui <-
         )
       ),
     dashboardBody(
+      tags$head(
+        tags$head(HTML(
+          "<!-- Global site tag (gtag.js) - Google Analytics -->
+          <script async src='https://www.googletagmanager.com/gtag/js?id=UA-103778910-3'></script>
+          <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          
+          gtag('config', 'UA-103778910-3');
+          </script>
+          "
+            )
+          )
+        ),
       tags$head(tags$style(HTML(".direct-chat-contacts-open .direct-chat-contacts {color:#000000;opacity:.9;}"))),
       tabItems(
         tabItem(
