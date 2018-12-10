@@ -20,12 +20,12 @@ options(highcharter.lang = hcoptslang())
 ui <-
   dashboardPagePlus(
     dashboardHeaderPlus( 
-      title = strong("Painel CCEI"),
-      titleWidth = 200,
+      title = strong("Transparência CCEI"),
+      titleWidth = 230,
       enable_rightsidebar = TRUE,
       rightSidebarIcon = "gears"), 
     dashboardSidebar(
-      width = 200,
+      width = 230,
       collapsed = FALSE,
       sidebarMenu(
         menuItem(
@@ -2179,5 +2179,5 @@ server <-
     })
 
   }
-shinyApp(ui,server)
+shinyApp(ui, server)
 
