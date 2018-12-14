@@ -533,16 +533,22 @@ ui <-
       ),
       rightSidebarTabContent(
         id = 2,
-        title = strong("Licenças"),
+        title = strong("Informações"),
         icon = "info-circle",
+        p(align = "justify", strong("Licenças"), style="color:white"),
         p(strong("HIGHCHARTS - License holder: ")),
         p(align = "justify", "INSTITUTO FEDERAL DE EDUCAÇÃO, CIÊNCIA E TECNOLOGIA DE BRASÍLIA"),
         p("Pompylio Lima"),
         p(align = "justify", "This license is valid for educational-institution for the following product(s): Highcharts, Highstock, Highmaps."),
         p(align = "justify", "This software is released under Creative Commons Attribution-NonCommercial 3.0, and is available for download at highcharts.com/download. No further activation or license key is required."),
-        hr(),
-        tags$a(href="https://github.com/pompylio/portransp-panel", target="_new", icon("github"), style="font-size:25px;color:white"),
-        p(align = "justify", "Pompylio Jerônimo de Lima")
+        p(align = "justify", strong("Fonte de dados"), style="color:white"),
+        p(align = "justify", tags$a(href = "http://portaltransparencia.gov.br/download-de-dados", target = "_new", "Portal da Transparência")),
+        p(align = "justify", paste0("- Orçamento (", tail(substr(db_siafi$DATA_REFERENCIA, 1, 7), n = 1), ")")),
+        p(align = "justify", paste0("- Pessoal (", tail(substr(db_siape$DATA_REFERENCIA, 1, 7), n = 1),")")),
+        p(align = "justify", tags$a(href = "https://www.google.com/forms/about/", target = "_new", "Google Forms")),
+        p(align = "justify", "- Avaliação (2018-11)"),
+        p(align = "justify", strong("Dúvidas e sugestões"), style="color:white"),
+        p(align = "justify", tags$a(href="https://github.com/pompylio/portransp-panel", target="_new", icon("github"), style="font-size:20px;color:white"), tags$a(href="https://github.com/pompylio/portransp-panel/issues", target="_new", "pompylio.lima@ifb.edu.br"))
         )
     ), title = "Painel CCEI"
   )
