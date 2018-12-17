@@ -550,7 +550,7 @@ ui <-
         p(align = "justify", strong("Dúvidas e sugestões"), style="color:white"),
         p(align = "justify", tags$a(href="https://github.com/pompylio/portransp-panel", target="_new", icon("github"), style="font-size:20px;color:white"), tags$a(href="https://github.com/pompylio/portransp-panel/issues", target="_new", "pompylio.lima@ifb.edu.br"))
         )
-    ), title = "Painel CCEI"
+    ), title = "Transparência CCEI"
   )
 # SHINY SERVER ----------------------------------------------------------------------------------------------------
 server <-
