@@ -39,16 +39,13 @@ ui <-
             startExpanded = TRUE,
             menuSubItem(
               text = strong("Evolução"),
-              tabName = "evolucao"
-              ),
+              tabName = "evolucao"),
             menuSubItem(
               text = strong("Categoria"),
               tabName = "categoria"),
             menuSubItem(
               text = strong("Comparativo"),
-              tabName = "comparativo")
-            )
-          ),
+              tabName = "comparativo"))),
         menuItem(
           text = strong("PESSOAL"),
           tabName = "pessoal",
@@ -68,24 +65,13 @@ ui <-
             menuSubItem(
               text = strong("Técnico"),
               tabName = "perfil_tecnico")),
-          # menuItem(
-          #   text = strong("Cargos e Funções"),
-          #   tabName = "cargo_funcao"),
           menuItem(
             text = strong("Rotatividade"),
-            tabName = "rotatividade")
-          ),
+            tabName = "rotatividade")),
         menuItem(
           text = strong("AVALIAÇÕES"),
           tabName = "avaliacoes",
-          icon = icon("comments-o"),
-          menuItem(
-            text = strong("Geral"),
-            tabName = "avaliacao_geral"
-          )
-        )
-        )
-      ),
+          icon = icon("comments-o")))),
     dashboardBody(
       tags$head(
         tags$head(HTML(
@@ -97,11 +83,7 @@ ui <-
           gtag('js', new Date());
           
           gtag('config', 'UA-103778910-3');
-          </script>
-          "
-            )
-          )
-        ),
+          </script>"))),
       tags$head(tags$style(HTML(".direct-chat-contacts-open .direct-chat-contacts {color:#000000;opacity:.9;}"))),
       tabItems(
         tabItem(
@@ -142,9 +124,7 @@ ui <-
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
               choices = list(typeplot = "empty", groupplot = "empty"),
-              selected = c(typeplot = "spline", groupplot = "empty", dimension = "empty"))
-            )
-          ),
+              selected = c(typeplot = "spline", groupplot = "empty", dimension = "empty")))),
         tabItem(
           tabName = "categoria", 
           fluidRow(
@@ -183,9 +163,7 @@ ui <-
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
               choices = c(typeplot = "empty", groupplot = "empty"),
-              selected = c(typeplot = "column", groupplot = "empty", dimension = "empty"))
-            )
-          ),
+              selected = c(typeplot = "column", groupplot = "empty", dimension = "empty")))),
         tabItem(
           tabName = "comparativo", 
           fluidRow(
@@ -224,9 +202,7 @@ ui <-
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
               choices = list(typeplot = "empty", groupplot = "empty"),
-              selected = c(typeplot = "column", groupplot = "percent", dimension = "empty"))
-          )
-        ),
+              selected = c(typeplot = "column", groupplot = "percent", dimension = "empty")))),
         tabItem(
           tabName = "evolucao_pessoal", 
           fluidRow(
@@ -309,8 +285,7 @@ ui <-
               boxtitle = "Cargos por classe e padrão",
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
-              choices = list(typeplot = c(`<i class='fa fa-bar-chart'></i>`="column", `<i class='fa fa-align-left'></i>`="bar"),
-                             groupplot = "empty"),
+              choices = list(typeplot = c(`<i class='fa fa-bar-chart'></i>`="column", `<i class='fa fa-align-left'></i>`="bar"), groupplot = "empty"),
               selected = c(typeplot = "column", groupplot = "normal", dimension = "empty"))
             )
           ),
@@ -340,45 +315,10 @@ ui <-
               width_box = 12,
               status = "warning",
               boxtitle = "Cargos por classe, padrão e nível de capacitação",
-              menu_selected = c("typeplot", "groupplot", "dimension", "selectY"),
-              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D", selectY = "Classe"),
-              choices = list(typeplot = c(`<i class='fa fa-bar-chart'></i>`="column", `<i class='fa fa-align-left'></i>`="bar"),
-                             groupplot = "empty", selectY = c("A", "B", "C", "D", "E")),
-              selected = c(typeplot = "column", groupplot = "normal", dimension = "empty", selectY = "E"))
-            )
-          ),
-        # tabItem(
-        #   tabName = "cargo_funcao",
-        #   fluidRow(
-        #     boxnew(
-        #       inputId = "PES14", # PES14 Cargos em comissão e funções gratificadas ocupadas ----
-        #       width_box = 6,
-        #       status = "warning",
-        #       boxtitle = "Cargos em comissão e funções gratificadas ocupadas",
-        #       menu_selected = c("typeplot", "groupplot","dimension"),
-        #       label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
-        #       choices = list(typeplot = "empty", groupplot = "empty"),
-        #       selected = c(typeplot = "column", groupplot = "empty", dimension = "empty")),
-        #     boxnew(
-        #       inputId = "PES15", # PES15 Cargos e funções ocupadas por tipo de ocupante ----
-        #       width_box = 6,
-        #       status = "warning",
-        #       boxtitle = "Cargos e funções ocupadas por tipo de ocupante",
-        #       menu_selected = c("typeplot", "groupplot","dimension"),
-        #       label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
-        #       choices = list(typeplot = "empty", groupplot = "empty"),
-        #       selected = c(typeplot = "column", groupplot = "empty", dimension = "empty")),
-        #     boxnew(
-        #       inputId = "PES16", # PES16 Cargos e funções ocupadas por órgão de origem ----
-        #       width_box = 6,
-        #       status = "warning",
-        #       boxtitle = "Cargos e funções ocupadas por órgão de origem",
-        #       menu_selected = c("typeplot", "groupplot","dimension"),
-        #       label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
-        #       choices = list(typeplot = "empty", groupplot = "empty"),
-        #       selected = c(typeplot = "column", groupplot = "empty", dimension = "empty"))
-        #   )
-        # ),
+              menu_selected = c("typeplot", "groupplot", "dimension"),
+              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
+              choices = list(typeplot = c(`<i class='fa fa-bar-chart'></i>`="column", `<i class='fa fa-align-left'></i>`="bar"),groupplot = "empty"),
+              selected = c(typeplot = "column", groupplot = "normal", dimension = "empty")))),
         tabItem(
           tabName = "rotatividade", 
           fluidRow(
@@ -417,93 +357,10 @@ ui <-
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
               choices = list(typeplot = "empty", groupplot = "empty"),
-              selected = c(typeplot = "spline", groupplot = "empty", dimension = "empty"))
-            )
-          ),
+              selected = c(typeplot = "spline", groupplot = "empty", dimension = "empty")))),
         tabItem(
-          tabName = "avaliacao_geral",
-          fluidRow(
-            column(
-              width = 12,
-              column(
-                width = 3,
-                selectInput(
-                  inputId = "avager_ano", 
-                  label = "Ano", 
-                  choices = unique(db_avager_av$ANO), 
-                  selected = max(unique(db_avager_av$ANO)))
-                ),
-              column(
-                width = 3,
-                selectInput(
-                  inputId = "avager_unidade", 
-                  label = "Unidade", 
-                  choices = unique(db_avager_av$UNIDADE_AVALIADA), 
-                  selected = unique(db_avager_av$UNIDADE_AVALIADA)[1]
-                )
-              )
-            ),
-            boxnew(
-              inputId = "AVA01", # AVA01 Número de avaliadores por cargo ----
-              width_box = 5,
-              status = "warning",
-              boxtitle = "Avaliadores por cargo",
-              menu_selected = c("dimension"),
-              label = c(dimension = "3D"),
-              selected = c(dimension = "empty")),
-            boxnew(
-              inputId = "AVA02", # AVA02 Resultado da avaliação por critério ----
-              width_box = 7,
-              status = "warning",
-              boxtitle = "Resultado da avaliação por critério",
-              menu_selected = c("typeplot", "groupplot", "dimension"),
-              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
-              choices = list(typeplot = "empty", groupplot = "empty"),
-              selected = c(typeplot = "column", groupplot = "empty", dimension = "empty")),
-            box(
-              width = 12, 
-              solidHeader = TRUE,
-              collapsible = TRUE,
-              collapsed = FALSE,
-              closable = FALSE,
-              column(
-                width = 4,
-                selectInput(
-                  inputId = "avager_cargo", 
-                  label = "Quadro a que pertence", 
-                  choices = c("TODOS", unique(db_avager_av[db_avager_av$UNIDADE_AVALIADA == "DG", ]$CARGO)),
-                  selected = "TODOS",
-                  width = "100%")),
-              column(
-                width = 8,
-                selectInput(
-                  inputId = "avager_questao", 
-                  label = "Questão", 
-                  choices = unique(db_avager_av[db_avager_av$UNIDADE_AVALIADA == "DG", ]$QUESTAO),
-                  selected = unique(db_avager_av[db_avager_av$UNIDADE_AVALIADA == "DG", ]$QUESTAO)[1],
-                  width = "100%")),
-              boxnew(
-              inputId = "AVA03", # AVA03 Resultado da avaliação por nota ----
-                width_box = 4, 
-                status = "warning",
-                boxtitle = "Resultado da avaliação por nota",
-                menu_selected = c("typeplot", "groupplot", "dimension"),
-                label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
-                choices = list(typeplot = "empty", groupplot = "empty"),
-                selected = c(typeplot = "column", groupplot = "empty", dimension = "empty")),
-              boxnew(
-              inputId = "AVA04", # AVA04 Resultado da avaliação por questão ----
-                width_box = 8,
-                status = "warning",
-                boxtitle = "Resultado da avaliação por questão",
-                menu_selected = c("typeplot", "groupplot", "dimension"),
-                label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
-                choices = list(typeplot = "empty", groupplot = "empty"),
-                selected = c(typeplot = "column", groupplot = "empty", dimension = "empty"))
-            )
-            
-            )
-          )
+          tabName = "avaliacoes",
+          uiOutput("item_avaliacao"))
         )
       ),
     rightSidebar( # Barra lateral direita ----
@@ -529,8 +386,7 @@ ui <-
           choices = list("Despesa Corrente" = unique(db_siafi$CODIGO_GRUPO_DE_DESPESA)[1], 
                          "Despesa de Capital" = unique(db_siafi$CODIGO_GRUPO_DE_DESPESA)[2], 
                          "Pessoal" = unique(db_siafi$CODIGO_GRUPO_DE_DESPESA)[3]),
-          selected = unique(db_siafi$CODIGO_GRUPO_DE_DESPESA)[1:2])
-      ),
+          selected = unique(db_siafi$CODIGO_GRUPO_DE_DESPESA)[1:2])),
       rightSidebarTabContent(
         id = 2,
         title = strong("Informações"),
@@ -555,6 +411,82 @@ ui <-
 # SHINY SERVER ----------------------------------------------------------------------------------------------------
 server <-
   function(session, input, output) {
+    
+    observeEvent(input$geral_unidade, {
+      if(input$geral_unidade == "CCEI"){
+        output$item_avaliacao <- renderUI({
+          fluidRow(
+            column(width = 12,
+              column(width = 3,
+                selectInput(
+                  inputId = "avager_ano", 
+                  label = "Ano", 
+                  choices = unique(db_avager_av$ANO), 
+                  selected = max(unique(db_avager_av$ANO)))),
+              column(width = 3,
+                selectInput(
+                  inputId = "avager_unidade", 
+                  label = "Unidade", 
+                  choices = unique(db_avager_av$UNIDADE_AVALIADA), 
+                  selected = unique(db_avager_av$UNIDADE_AVALIADA)[1]))),
+            boxnew(
+              inputId = "AVA01", # AVA01 Número de avaliadores por cargo ----
+              width_box = 5,
+              status = "warning",
+              boxtitle = "Avaliadores por cargo",
+              menu_selected = c("dimension"),
+              label = c(dimension = "3D"),
+              selected = c(dimension = "empty")),
+            boxnew(
+              inputId = "AVA02", # AVA02 Resultado da avaliação por critério ----
+              width_box = 7,
+              status = "warning",
+              boxtitle = "Resultado da avaliação por critério",
+              menu_selected = c("typeplot", "groupplot", "dimension"),
+              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
+              choices = list(typeplot = "empty", groupplot = "empty"),
+              selected = c(typeplot = "column", groupplot = "empty", dimension = "empty")),
+            box(width = 12, solidHeader = TRUE,collapsible = TRUE,collapsed = FALSE,closable = FALSE,
+              column(width = 4,
+                selectInput(
+                  inputId = "avager_cargo", 
+                  label = "Quadro a que pertence", 
+                  choices = c("TODOS", unique(db_avager_av[db_avager_av$UNIDADE_AVALIADA == "DG", ]$CARGO)),
+                  selected = "TODOS",
+                  width = "100%")),
+              column(width = 8,
+                selectInput(
+                  inputId = "avager_questao", 
+                  label = "Questão", 
+                  choices = unique(db_avager_av[db_avager_av$UNIDADE_AVALIADA == "DG", ]$QUESTAO),
+                  selected = unique(db_avager_av[db_avager_av$UNIDADE_AVALIADA == "DG", ]$QUESTAO)[1],
+                  width = "100%")),
+              boxnew(
+                inputId = "AVA03", # AVA03 Resultado da avaliação por nota ----
+                width_box = 4, 
+                status = "warning",
+                boxtitle = "Resultado da avaliação por nota",
+                menu_selected = c("typeplot", "groupplot", "dimension"),
+                label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
+                choices = list(typeplot = "empty", groupplot = "empty"),
+                selected = c(typeplot = "column", groupplot = "empty", dimension = "empty")),
+              boxnew(
+                inputId = "AVA04", # AVA04 Resultado da avaliação por questão ----
+                width_box = 8,
+                status = "warning",
+                boxtitle = "Resultado da avaliação por questão",
+                menu_selected = c("typeplot", "groupplot", "dimension"),
+                label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
+                choices = list(typeplot = "empty", groupplot = "empty"),
+                selected = c(typeplot = "column", groupplot = "empty", dimension = "empty"))))
+        })
+      } else {
+        output$item_avaliacao <- renderUI({
+          fluidRow(
+            column(width = 5, callout(title = "Informação", message = "Não há dados neste módulo relacionados a esta unidade")))
+        })
+      }
+    })
 
 # ORÇAMENTO ---------------------------------------------------------------
     color_plot <- eventReactive(input$action_color, {

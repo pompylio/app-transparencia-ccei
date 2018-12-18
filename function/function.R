@@ -370,6 +370,12 @@ boxnew <- function(inputId, boxtitle, menu_selected, label, choices, selected, s
   return(boxnew)
 }
 
+callout <- function(title, message){
+  shiny::tags$div(class = "callout callout-info",
+                  shiny::tags$h4(title),
+                  shiny::tags$p(message))
+}
+
 # HIGHCHARTER -------------------------------------------------------------
 
 hcoptslang <- function(){
