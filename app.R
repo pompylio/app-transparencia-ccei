@@ -129,7 +129,7 @@ ui <-
           tabName = "categoria", 
           fluidRow(
             boxnew(
-              inputId = "ORC06", # ORC06 Execução da despesa por programa ----
+              inputId = "ORC05", # ORC05 Execução da despesa por programa ----
               width_box = 6,
               status = "warning",
               boxtitle = "Execução por programa",
@@ -138,7 +138,7 @@ ui <-
               choices = c(typeplot = "empty", groupplot = "empty"),
               selected = c(typeplot = "column", groupplot = "empty", dimension = "empty")),
             boxnew(
-              inputId = "ORC05", # ORC05 Execução da despesa por grupo de despesa ----
+              inputId = "ORC06", # ORC06 Execução da despesa por grupo de despesa ----
               width_box = 6,
               status = "warning",
               boxtitle = "Execução por grupo de despesa",
@@ -373,7 +373,7 @@ ui <-
         selectInput(
           inputId = "geral_unidade", 
           label = "Unidade", 
-          choices = c("IFB", "CCEI"),#, unique(db_siafi[order(db_siafi$SIGLA_UNIDADE_GESTORA),]$SIGLA_UNIDADE_GESTORA)), #CONSIDERAR ESCOLHAS DE PESSOAL
+          choices = "CCEI",
           selected = "CCEI"),
         selectInput(
           inputId = "geral_exercicio",
@@ -685,8 +685,57 @@ server <-
         origin = "orcamento",
         colors = paste(hccolor$exeorc))
     })
-    # ORC05 Execução da despesa por grupo de despesa ----
+    # ORC05 Execução da despesa por programa ----
     dbpORC05 <- reactive({
+      if (input$geral_unidade == "IFB") {
+        db <- db_siafi %>%
+          filter(
+            CODIGO_GRUPO_DE_DESPESA %in% input$grupodespesa,
+            substr(LANCAMENTO, 1, 4) == input$geral_exercicio) %>%
+          group_by(
+            ANO = substr(LANCAMENTO, 1, 4),
+            SIGLA_UNIDADE_GESTORA = "IFB", 
+            PROGRAMA = paste(CODIGO_PROGRAMA_ORCAMENTARIO, NOME_PROGRAMA_RESUMO)) %>%
+          summarise(
+            SERIE1 = sum(EMPENHADO, na.rm = TRUE),
+            SERIE2 = sum(LIQUIDADO, na.rm = TRUE),
+            SERIE3 = sum(PAGO, na.rm = TRUE),
+            SERIE_RAP = sum(RAP_PAGO, na.rm = TRUE))
+      } else{
+        db <- db_siafi %>%
+          filter(
+            SIGLA_UNIDADE_GESTORA == input$geral_unidade,
+            substr(LANCAMENTO, 1, 4) == input$geral_exercicio, 
+            CODIGO_GRUPO_DE_DESPESA %in% input$grupodespesa) %>%
+          group_by(
+            ANO = substr(LANCAMENTO, 1, 4), 
+            SIGLA_UNIDADE_GESTORA, 
+            PROGRAMA = paste(CODIGO_PROGRAMA_ORCAMENTARIO, NOME_PROGRAMA_RESUMO)) %>%
+          summarise(
+            SERIE1 = sum(EMPENHADO, na.rm = TRUE),
+            SERIE2 = sum(LIQUIDADO, na.rm = TRUE),
+            SERIE3 = sum(PAGO, na.rm = TRUE),
+            SERIE_RAP = sum(RAP_PAGO, na.rm = TRUE))
+      }
+      db$PROGRAMA <- str_to_title(db$PROGRAMA)
+      db
+    })
+    output$plotORC05 <- renderHighchart({
+      highchart_new(
+        data = dbpORC05(),
+        series = c(SERIE1 = "EMPENHADO", SERIE2 = "LIQUIDADO", SERIE3 = "PAGO", SERIE_RAP = "RAP PAGO"),
+        subtitle = paste(input$geral_unidade, input$geral_exercicio),
+        categories = dbpORC05()$PROGRAMA,
+        credits = "Portal da Transparência",
+        input_plot = c(
+          typeplot = input$typeplotORC05, 
+          dimension = input$dimensionORC05, 
+          groupplot = input$groupplotORC05),
+        origin = "orcamento",
+        colors = paste(hccolor$exeorc))
+    })
+    # ORC06 Execução da despesa por grupo de despesa ----
+    dbpORC06 <- reactive({
       if (input$geral_unidade == "IFB") {
         db <- db_siafi %>%
           filter(
@@ -694,8 +743,7 @@ server <-
             substr(LANCAMENTO, 1, 4) == input$geral_exercicio) %>%
           group_by(
             ANO = substr(LANCAMENTO, 1, 4), 
-            CODIGO_GRUPO_DE_DESPESA, 
-            SIGLA_UNIDADE_GESTORA = "IFB", 
+            SIGLA_UNIDADE_GESTORA = "IFB",
             NOME_GRUPO_DE_DESPESA) %>%
           summarise(
             SERIE1 = sum(EMPENHADO, na.rm = TRUE),
@@ -711,7 +759,6 @@ server <-
           group_by(
             ANO = substr(LANCAMENTO, 1, 4), 
             SIGLA_UNIDADE_GESTORA, 
-            CODIGO_GRUPO_DE_DESPESA, 
             NOME_GRUPO_DE_DESPESA) %>%
           summarise(
             SERIE1 = sum(EMPENHADO, na.rm = TRUE),
@@ -722,63 +769,14 @@ server <-
       db$NOME_GRUPO_DE_DESPESA <- str_to_title(db$NOME_GRUPO_DE_DESPESA)
       db
     })
-    output$plotORC05 <- renderHighchart({
-      highchart_new(
-        data = dbpORC05(),
-        series = c(SERIE1 = "EMPENHADO", SERIE2 = "LIQUIDADO", SERIE3 = "PAGO", SERIE_RAP = "RAP PAGO"),
-        subtitle = paste(unique(dbpORC05()$SIGLA_UNIDADE_GESTORA), unique(dbpORC05()$ANO)),
-        categories = dbpORC05()$NOME_GRUPO_DE_DESPESA,
-        credits = "Portal da Transparência",
-        input_plot = c( 
-          typeplot = input$typeplotORC05, 
-          dimension = input$dimensionORC05, 
-          groupplot = input$groupplotORC05),
-        origin = "orcamento",
-        colors = paste(hccolor$exeorc))
-    })
-    # ORC06 Execução da despesa por programa ----
-    dbpORC06 <- reactive({
-      if (input$geral_unidade == "IFB") {
-        db <- db_siafi %>%
-          filter(
-            substr(LANCAMENTO, 1, 4) == input$geral_exercicio, 
-            CODIGO_GRUPO_DE_DESPESA %in% input$grupodespesa) %>%
-          group_by(
-            ANO = substr(LANCAMENTO, 1, 4), 
-            SIGLA_UNIDADE_GESTORA = "IFB", 
-            PROGRAMA = paste(CODIGO_PROGRAMA_ORCAMENTARIO, NOME_PROGRAMA_RESUMO)) %>%
-          summarise(
-            SERIE1 = sum(EMPENHADO, na.rm = TRUE),
-            SERIE2 = sum(LIQUIDADO, na.rm = TRUE),
-            SERIE3 = sum(PAGO, na.rm = TRUE),
-            SERIE_RAP = sum(RAP_PAGO, na.rm = TRUE))
-      } else{
-        db <- db_siafi %>%
-          filter(
-            substr(LANCAMENTO, 1, 4) == input$geral_exercicio, 
-            SIGLA_UNIDADE_GESTORA == input$geral_unidade, 
-            CODIGO_GRUPO_DE_DESPESA %in% input$grupodespesa) %>%
-          group_by(
-            ANO = substr(LANCAMENTO, 1, 4), 
-            SIGLA_UNIDADE_GESTORA, 
-            PROGRAMA = paste(CODIGO_PROGRAMA_ORCAMENTARIO, NOME_PROGRAMA_RESUMO)) %>%
-          summarise(
-            SERIE1 = sum(EMPENHADO, na.rm = TRUE),
-            SERIE2 = sum(LIQUIDADO, na.rm = TRUE),
-            SERIE3 = sum(PAGO, na.rm = TRUE),
-            SERIE_RAP = sum(RAP_PAGO, na.rm = TRUE))
-      }
-      db$PROGRAMA <- str_to_title(db$PROGRAMA)
-      db
-    })
     output$plotORC06 <- renderHighchart({
       highchart_new(
         data = dbpORC06(),
         series = c(SERIE1 = "EMPENHADO", SERIE2 = "LIQUIDADO", SERIE3 = "PAGO", SERIE_RAP = "RAP PAGO"),
-        subtitle = paste(unique(dbpORC06()$SIGLA_UNIDADE_GESTORA), unique(dbpORC06()$ANO)),
-        categories = dbpORC06()$PROGRAMA,
+        subtitle = paste(input$geral_unidade, input$geral_exercicio),
+        categories = dbpORC06()$NOME_GRUPO_DE_DESPESA,
         credits = "Portal da Transparência",
-        input_plot = c(
+        input_plot = c( 
           typeplot = input$typeplotORC06, 
           dimension = input$dimensionORC06, 
           groupplot = input$groupplotORC06),
@@ -825,7 +823,7 @@ server <-
       highchart_new(
         data = dbpORC07(),  
         series = c(SERIE1 = "EMPENHADO", SERIE2 = "LIQUIDADO", SERIE3 = "PAGO", SERIE_RAP = "RAP PAGO"),
-        subtitle = paste(unique(dbpORC07()$SIGLA_UNIDADE_GESTORA), unique(dbpORC07()$ANO)),
+        subtitle = paste(input$geral_unidade, input$geral_exercicio),
         categories = dbpORC07()$NOME_ACAO_RESUMO,
         credits = "Portal da Transparência",
         input_plot = c( 
@@ -874,7 +872,7 @@ server <-
       highchart_new(
         data = dbpORC08(),
         series = c(SERIE1 = "EMPENHADO", SERIE2 = "LIQUIDADO", SERIE3 = "PAGO", SERIE_RAP = "RAP PAGO"),
-        subtitle = paste(unique(dbpORC08()$SIGLA_UNIDADE_GESTORA), unique(dbpORC08()$ANO)),
+        subtitle = paste(input$geral_unidade, input$geral_exercicio),
         categories = dbpORC08()$NOME_ELEMENTO_DE_DESPESA,
         credits = "Portal da Transparência",
         input_plot = c(
@@ -884,7 +882,6 @@ server <-
         origin = "orcamento",
         colors = paste(hccolor$exeorc))
     })
-    
     # ORC09 Execução da despesa por unidade gestora ----
     dbpORC09 <- reactive({
       if(input$departmentORC09 == "Sem Reitoria") {
