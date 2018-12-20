@@ -343,29 +343,18 @@ boxnew <- function(inputId, boxtitle, menu_selected, label, choices, selected, s
         sidebar_background = "#ffffff",
         sidebar_start_open = FALSE,
         sidebar_content = tagList(
-          #column(
-           # width = 6,
-            strong(p(color = "black", "Configuração:")),
-            if(any(menu_selected == "typeplot")){typeplot}else{NULL},
-            if(any(menu_selected == "groupplot")){groupplot}else{NULL},
-            if(any(menu_selected == "dimension")){dimension}else{NULL},
-            if(any(menu_selected == "year")){year}else{NULL},
-            if(any(menu_selected == "yearmonth")){yearmonth}else{NULL},
-            if(any(menu_selected == "department")){department}else{NULL},
-            if(any(menu_selected == "programa")){programa}else{NULL},
-            if(any(menu_selected == "selectY")){selectY}else{NULL},
-            if(any(menu_selected == "filterx")){filterx}else{NULL},
-            if(any(menu_selected == "filtery")){filtery}else{NULL}
-         # ),
-         # column(
-         #   width = 6,
-         #   strong(p("Descrição do gráfico:")),
-        #    p(align = "justify", if(missing(description)){""}else{HTML(paste(description, collapse = "<br/>"))})
-          #)
-          
-        ),
-        shinycssloaders::withSpinner(highchartOutput(paste0("plot",inputId)),type = 8L,color = "#3c8dbc")
-      )
+          strong(p(color = "black", "Configuração:")),
+          if(any(menu_selected == "typeplot")){typeplot}else{NULL},
+          if(any(menu_selected == "groupplot")){groupplot}else{NULL},
+          if(any(menu_selected == "dimension")){dimension}else{NULL},
+          if(any(menu_selected == "year")){year}else{NULL},
+          if(any(menu_selected == "yearmonth")){yearmonth}else{NULL},
+          if(any(menu_selected == "department")){department}else{NULL},
+          if(any(menu_selected == "programa")){programa}else{NULL},
+          if(any(menu_selected == "selectY")){selectY}else{NULL},
+          if(any(menu_selected == "filterx")){filterx}else{NULL},
+          if(any(menu_selected == "filtery")){filtery}else{NULL}),
+        shinycssloaders::withSpinner(highchartOutput(paste0("plot",inputId)),type = 8L,color = "#3c8dbc"))
   }
   return(boxnew)
 }
