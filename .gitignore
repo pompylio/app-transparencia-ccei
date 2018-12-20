@@ -4,6 +4,7 @@
 .Rproj.user
 .Rhistory
 .Ruserdata
+README.Rmd
 data/
 modules/
 security/
