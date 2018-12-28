@@ -11,6 +11,7 @@ suppressMessages(require(lubridate))
 suppressMessages(require(highcharter))
 suppressMessages(require(reshape2))
 suppressMessages(require(treemap))
+suppressMessages(require(DT))
 # Functions
 source("function/function.R",encoding = "UTF-8")
 # Data
@@ -71,7 +72,13 @@ ui <-
         menuItem(
           text = strong("AVALIAÇÕES"),
           tabName = "avaliacoes",
-          icon = icon("comments-o")))),
+          icon = icon("comments-o"),
+          menuItem(
+            text = strong("Avaliação Geral"), 
+            tabName = "ava_ger"),
+          menuItem(
+            text = strong("Priorização do Orçamento"), 
+            tabName = "ava_orc")))),
     dashboardBody(
       tags$head(
         tags$head(HTML(
@@ -359,8 +366,12 @@ ui <-
               choices = list(typeplot = "empty", groupplot = "empty"),
               selected = c(typeplot = "spline", groupplot = "empty", dimension = "empty")))),
         tabItem(
-          tabName = "avaliacoes",
-          uiOutput("item_avaliacao"))
+          tabName = "ava_ger", # AVALIACAO GERAL ----
+          uiOutput("item_avaliacao")),
+        tabItem(
+          tabName = "ava_orc", # AVALIACAO ORCAMENTO ----
+          uiOutput("ava_orc_2019")
+        )
         )
       ),
     rightSidebar( # Barra lateral direita ----
@@ -482,6 +493,65 @@ server <-
         })
       } else {
         output$item_avaliacao <- renderUI({
+          fluidRow(
+            column(width = 5, callout(title = "Informação", message = "Não há dados neste módulo relacionados a esta unidade")))
+        })
+      }
+    })
+    
+    observeEvent(input$geral_unidade, {
+      if(input$geral_unidade == "CCEI"){
+        output$ava_orc_2019 <- renderUI({
+          fluidRow(
+            column(width = 12,
+                   column(width = 3,
+                          selectInput(
+                            inputId = "avaliadores", 
+                            label = "Avaliadores", 
+                            choices = c("TODOS", unique(db_orcano_gr$CARGO)), 
+                            selected = "TODOS")),
+                   column(width = 3,
+                          selectInput(
+                            inputId = "ava_grupodespesa", 
+                            label = "Grupo de despesa", 
+                            choices = c("CUSTEIO","INVESTIMENTO"), 
+                            selected = "CUSTEIO"))),
+            boxnew(
+              inputId = "AVA05", # AVA05 Número de avaliadores por grupo ----
+              width_box = 4,
+              status = "warning",
+              boxtitle = "Número de avaliadores por grupo",
+              menu_selected = c("dimension"),
+              label = c(dimension = "3D"),
+              selected = c(dimension = "empty")),
+            boxnew(
+              inputId = "AVA06", # AVA06 Priorização do orçamento por categoria de gasto ----
+              width_box = 8,
+              status = "warning",
+              boxtitle = "Priorização do orçamento por categoria de gasto",
+              menu_selected = c("typeplot", "groupplot", "dimension"),
+              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
+              choices = list(typeplot = "empty", groupplot = "empty"),
+              selected = c(typeplot = "column", groupplot = "percent", dimension = "empty")),
+            boxnew(
+              inputId = "AVA07", # AVA07 Categoria de gasto por priorização do orçamento ----
+              width_box = 12, 
+              status = "warning",
+              boxtitle = "Categoria de gasto por priorização do orçamento",
+              menu_selected = c("typeplot", "groupplot", "dimension"),
+              label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
+              choices = list(typeplot = "empty", groupplot = "empty"),
+              selected = c(typeplot = "spline", groupplot = "empty", dimension = "empty")),
+            box(
+              width = 12,      # AVA08 Tabela de dados - priorização do orçamento ----
+              title = "Tabela de dados - priorização do orçamento",
+              solidHeader = T,
+              collapsible = T,
+              collapsed = F,
+                DT::dataTableOutput("datatable01")))
+        })
+      } else {
+        output$ava_orc_2019 <- renderUI({
           fluidRow(
             column(width = 5, callout(title = "Informação", message = "Não há dados neste módulo relacionados a esta unidade")))
         })
@@ -2113,6 +2183,181 @@ server <-
         colors = hccolor$pessch$h40)
     })
 
+    # AVA05 Número de avaliadores por grupo ----
+    dbpAVA05 <- reactive({
+      db <- db_orcano_gr %>% 
+        filter(
+          ANO == "2019") %>% 
+        group_by(
+          ANO, 
+          CARGO) %>% 
+        summarise(
+          SERIE1 = sum(TOTAL, na.rm = TRUE))
+      db
+    })
+    output$plotAVA05 <- renderHighchart({
+      hc <- highchart() %>%
+        hc_title(text = "") %>%
+        hc_subtitle(text = paste(input$avager_unidade, unique(dbpAVA05()$ANO))) %>%
+        hc_yAxis(title = list(text = "")) %>%
+        hc_xAxis(title = list(text = "")) %>% 
+        hc_chart(type = 'pie', options3d = list(enabled = FALSE, alpha = 45)) %>% 
+        hc_add_series_labels_values(
+          name = "Total",
+          labels = dbpAVA05()$CARGO,
+          values = dbpAVA05()$SERIE1, colors = hccolor$palgre[
+            sort(
+              seq(
+                from = which(names(hccolor$palgre) == "gre95"),
+                to = which(names(hccolor$palgre) == "gre10"), 
+                by = 2), 
+              decreasing = TRUE)]
+          [1:length(dbpAVA05()$CARGO)]) %>% 
+        hc_plotOptions(pie = list(showInLegend = TRUE, dataLabels = list(enabled = FALSE)))
+      hc
+    })
+    # AVA06 Resultado por destinação e nível de prioridade ----
+    dbpAVA06 <- reactive({
+      if(input$avaliadores == "TODOS"){
+        db <- db_orcano_av %>% 
+          filter(
+            CATEGORIA == input$ava_grupodespesa) %>% 
+          group_by(
+            QUESTAO, 
+            AVALIACAO) %>% 
+          summarise(
+            TOTAL = n()) %>% 
+          spread(
+            key = AVALIACAO, 
+            value = TOTAL, 
+            fill = 0)
+      } else {
+        db <- db_orcano_av %>% 
+          filter(
+            CATEGORIA == input$ava_grupodespesa, 
+            CARGO == input$avaliadores) %>% 
+          group_by(
+            QUESTAO, 
+            AVALIACAO) %>% 
+          summarise(
+            TOTAL = n()) %>% 
+          spread(
+            key = AVALIACAO, 
+            value = TOTAL, 
+            fill = 0)
+        }
+      nm <- seq(from = 1, to = ncol(db)-1)
+      nm <- paste0("SERIE", nm)
+      colnames(db) <- c("QUESTAO", nm)
+      db
+    })
+    output$plotAVA06 <- renderHighchart({
+      highchart_new(
+        data = dbpAVA06(),
+        series = c(SERIE1 = "P1", SERIE2 = "P2", SERIE3 = "P3", SERIE4 = "P4", SERIE5 = "P5", SERIE6 = "P6", SERIE7 = "P7", SERIE8 = "P8"),
+        subtitle = paste(if(input$avaliadores == "TODOS"){""}else{paste(input$avaliadores,"|")}, input$ava_grupodespesa, "2019"),
+        categories = dbpAVA06()$QUESTAO,
+        credits = "Portal da Transparência",
+        input_plot = c(
+          typeplot = input$typeplotAVA06,
+          dimension = input$dimensionAVA06,
+          groupplot = input$groupplotAVA06),
+        origin = "orcamento",
+        colors = c(hccolor$palblu$blu05, hccolor$palblu$blu15, hccolor$palblu$blu25, hccolor$palblu$blu35, 
+                       hccolor$palblu$blu45, hccolor$palblu$blu55, hccolor$palblu$blu65, hccolor$palblu$blu75))
+    })
+    # AVA07 Priorização do orçamento por categoria de gasto ----
+    dbpAVA07 <- reactive({
+      if(input$avaliadores == "TODOS"){
+        db <- db_orcano_av %>% 
+          filter(
+            CATEGORIA == input$ava_grupodespesa) %>% 
+          group_by(
+            QUESTAO, 
+            AVALIACAO) %>% 
+          summarise(
+            TOTAL = n()) %>% 
+          spread(
+            key = QUESTAO, 
+            value = TOTAL, 
+            fill = 0)
+      } else {
+        db <- db_orcano_av %>% 
+          filter(
+            CATEGORIA == input$ava_grupodespesa, 
+            CARGO == input$avaliadores) %>% 
+          group_by(
+            QUESTAO, 
+            AVALIACAO) %>% 
+          summarise(
+            TOTAL = n()) %>% 
+          spread(
+            key = QUESTAO, 
+            value = TOTAL, 
+            fill = 0)
+      }
+      db$AVALIACAO <- paste0("P", db$AVALIACAO)
+      db
+    })
+    output$plotAVA07 <- renderHighchart({
+      db <- dbpAVA07()
+      nm_ser <- colnames(db[, c(2:ncol(db))])
+      nm <- seq(from = 1, to = ncol(db)-1)
+      nm <- paste0("SERIE", nm)
+      colnames(db) <- c("AVALIACAO", nm)
+      names(nm_ser) <- paste0("SERIE", seq(from = 1, to = length(nm_ser)))
+      highchart_new(
+        data = db,
+        series = nm_ser,
+        subtitle = paste(if(input$avaliadores == "TODOS"){""}else{paste(input$avaliadores,"|")}, input$ava_grupodespesa, "2019"),
+        categories = db$AVALIACAO,
+        credits = "Portal da Transparência",
+        input_plot = c( 
+          typeplot = input$typeplotAVA07, 
+          dimension = input$dimensionAVA07, 
+          groupplot = input$groupplotAVA07),
+        origin = "orcamento",
+        colors = hccolor$palgre[
+          sort(
+            seq(
+              from = which(names(hccolor$palgre) == "gre95"),
+              to = which(names(hccolor$palgre) == "gre10"), 
+              by = 2), 
+            decreasing = TRUE)]
+        [1:ncol(db)-1])
+    })
+    # AVA08 Tabela de dados priorização do orçamento ----
+    output$datatable01 <- renderDataTable({
+      db <- db_orcano_av %>%
+        group_by(CATEGORIA, QUESTAO, DESCRICAO, AVALIACAO) %>% 
+        summarise(TOTAL = n()) %>% 
+        spread(key = AVALIACAO, value = TOTAL, fill = 0)
+      if(any(db$QUESTAO == "Outro" & db$DESCRICAO == "")) db <- db[-which(db$QUESTAO == "Outro" & db$DESCRICAO == ""),]
+      db$QUESTAO <- factor(db$QUESTAO, levels = c(unique(db[!db$QUESTAO == "Outro",]$QUESTAO), "Outro"))
+      db <- db[order(x = db$QUESTAO, decreasing = FALSE),]
+      db$QUESTAO <- as.character(as.factor(db$QUESTAO))
+      db[db$QUESTAO == "Outro",]$QUESTAO <- paste0(db[db$QUESTAO == "Outro",]$QUESTAO, " (", db[db$QUESTAO == "Outro",]$DESCRICAO,")")
+      db <- db[,c(1,2,4:ncol(db))]
+      db$CATEGORIA <- str_to_title(db$CATEGORIA)
+      dttb <- 
+        datatable(
+          db,
+          rownames = FALSE, 
+          escape = FALSE,
+          colnames = c("Grupo de Despesa", "Destinação proposta", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8"),
+          options = list(
+            pageLength = 11,
+            language = list(url ='http://cdn.datatables.net/plug-ins/1.10.7/i18n/Portuguese-Brasil.json'))) %>% 
+        formatStyle(
+          c("1","2","3","4","5","6","7","8"), 
+          color = "white",
+          backgroundColor = 
+            styleInterval(
+              cuts = c(1, 4, 7, 10, 13), 
+              values = c(hccolor$palgra$gra50, hccolor$palgra$gra40, hccolor$palgra$gra30, hccolor$palgra$gra20, 
+                         hccolor$palgra$gra10, hccolor$palgra$gra0)))
+      dttb
+    })
   }
 shinyApp(ui, server)
 
