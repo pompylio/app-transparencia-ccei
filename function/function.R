@@ -359,10 +359,22 @@ boxnew <- function(inputId, boxtitle, menu_selected, label, choices, selected, s
   return(boxnew)
 }
 
-callout <- function(title, message){
-  shiny::tags$div(class = "callout callout-info",
-                  shiny::tags$h4(title),
-                  shiny::tags$p(message))
+callout <- function(title, message, type, ...){
+  if(missing(type)){
+    type = "callout callout-info"
+    
+  } else {
+    type = paste0("callout callout-", type)
+  }
+  if(missing(title)){
+    callout <- shiny::tags$div(class = type,
+                    shiny::tags$p(message))
+  }else{
+    callout <- shiny::tags$div(class = type,
+                    shiny::tags$h4(..., title),
+                    shiny::tags$p(message))
+  }
+  return(callout)
 }
 
 # HIGHCHARTER -------------------------------------------------------------

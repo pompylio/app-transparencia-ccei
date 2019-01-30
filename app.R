@@ -413,7 +413,7 @@ ui <-
         p(align = "justify", paste0("- Orçamento (", tail(substr(db_siafi$DATA_REFERENCIA, 1, 7), n = 1), ")")),
         p(align = "justify", paste0("- Pessoal (", tail(substr(db_siape$DATA_REFERENCIA, 1, 7), n = 1),")")),
         p(align = "justify", tags$a(href = "https://www.google.com/forms/about/", target = "_new", "Google Forms")),
-        p(align = "justify", "- Avaliação (2018-11)"),
+        p(align = "justify", paste0("- Avaliação", max(ymd(substr(file.info("data/db_orcano_av.rds")$mtime, 1, 10)), ymd(substr(file.info("data/db_avager_av.rds")$mtime, 1, 10))))),
         p(align = "justify", strong("Dúvidas e sugestões"), style="color:white"),
         p(align = "justify", tags$a(href="https://github.com/pompylio/portransp-panel", target="_new", icon("github"), style="font-size:20px;color:white"), tags$a(href="https://github.com/pompylio/portransp-panel/issues", target="_new", "pompylio.lima@ifb.edu.br"))
         )
@@ -515,7 +515,12 @@ server <-
                             inputId = "ava_grupodespesa", 
                             label = "Grupo de despesa", 
                             choices = c("CUSTEIO","INVESTIMENTO"), 
-                            selected = "CUSTEIO"))),
+                            selected = "CUSTEIO")),
+                   column(width = 6,
+                          callout(message = "Resultado da pesquisa sobre a priorização do orçamento 2019 do Campus
+                                  Ceilândia, realizada entre 12 e 31 de dezembro de 2018, com a participação de 
+                                  alunos, técnicos e docentes.", 
+                                  type = "info "))),
             boxnew(
               inputId = "AVA05", # AVA05 Número de avaliadores por grupo ----
               width_box = 4,
