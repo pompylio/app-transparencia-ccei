@@ -116,22 +116,22 @@ ui <-
               selected = c(typeplot = "column", groupplot = "percent", dimension = "empty")),
             boxnew(
               inputId = "ORC03", # ORC03 Execução da despesa por mês (acumulado) -----
-              width_box = 12,
+              width_box = 6,
               status = "warning",
               boxtitle = "Execução da despesa por mês (acumulado)",
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
               choices = c(typeplot = "empty", groupplot = "empty"),
-              selected = c(typeplot = "areaspline", groupplot = "empty", dimension = "empty")),
+              selected = c(typeplot = "column", groupplot = "empty", dimension = "empty")),
             boxnew(
               inputId = "ORC04", # ORC04 Execução da despesa por mês (não acumulado) ----
-              width_box = 12,
+              width_box = 6,
               status = "warning",
               boxtitle = "Execução da despesa por mês (não acumulado)",
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
               choices = list(typeplot = "empty", groupplot = "empty"),
-              selected = c(typeplot = "spline", groupplot = "empty", dimension = "empty")))),
+              selected = c(typeplot = "column", groupplot = "empty", dimension = "empty")))),
         tabItem(
           tabName = "categoria", 
           fluidRow(
@@ -390,7 +390,7 @@ ui <-
           inputId = "geral_exercicio",
           label = "Exercício", 
           choices = as.character(sort(seq(from = 2013, to = year(Sys.Date()), by = 1), decreasing = TRUE)), 
-          selected = "2018"),
+          selected = "2019"),
         checkboxGroupInput(
           inputId = "grupodespesa",
           label = "Grupo de despesa",
