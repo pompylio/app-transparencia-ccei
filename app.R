@@ -122,7 +122,7 @@ ui <-
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
               choices = c(typeplot = "empty", groupplot = "empty"),
-              selected = c(typeplot = "column", groupplot = "empty", dimension = "empty")),
+              selected = c(typeplot = "areaspline", groupplot = "empty", dimension = "empty")),
             boxnew(
               inputId = "ORC04", # ORC04 Execução da despesa por mês (não acumulado) ----
               width_box = 6,
@@ -131,7 +131,7 @@ ui <-
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
               choices = list(typeplot = "empty", groupplot = "empty"),
-              selected = c(typeplot = "column", groupplot = "empty", dimension = "empty")))),
+              selected = c(typeplot = "areaspline", groupplot = "empty", dimension = "empty")))),
         tabItem(
           tabName = "categoria", 
           fluidRow(
@@ -819,7 +819,7 @@ server <-
           group_by(
             ANO = substr(LANCAMENTO, 1, 4), 
             SIGLA_UNIDADE_GESTORA = "IFB",
-            NOME_GRUPO_DE_DESPESA) %>%
+            NOME_GRUPO_DE_DESPESA = str_to_title(NOME_GRUPO_DE_DESPESA)) %>%
           summarise(
             SERIE1 = sum(EMPENHADO, na.rm = TRUE),
             SERIE2 = sum(LIQUIDADO, na.rm = TRUE),
@@ -834,14 +834,13 @@ server <-
           group_by(
             ANO = substr(LANCAMENTO, 1, 4), 
             SIGLA_UNIDADE_GESTORA, 
-            NOME_GRUPO_DE_DESPESA) %>%
+            NOME_GRUPO_DE_DESPESA = str_to_title(NOME_GRUPO_DE_DESPESA)) %>%
           summarise(
             SERIE1 = sum(EMPENHADO, na.rm = TRUE),
             SERIE2 = sum(LIQUIDADO, na.rm = TRUE),
             SERIE3 = sum(PAGO, na.rm = TRUE),
             SERIE_RAP = sum(RAP_PAGO, na.rm = TRUE))
       }
-      db$NOME_GRUPO_DE_DESPESA <- str_to_title(db$NOME_GRUPO_DE_DESPESA)
       db
     })
     output$plotORC06 <- renderHighchart({
@@ -918,7 +917,7 @@ server <-
           group_by(
             ANO = substr(LANCAMENTO, 1, 4), 
             SIGLA_UNIDADE_GESTORA = "IFB", 
-            NOME_ELEMENTO_DE_DESPESA) %>%
+            NOME_ELEMENTO_DE_DESPESA = str_to_title(NOME_ELEMENTO_DE_DESPESA)) %>%
           summarise(
             SERIE1 = sum(EMPENHADO, na.rm = TRUE),
             SERIE2 = sum(LIQUIDADO, na.rm = TRUE),
@@ -933,7 +932,7 @@ server <-
           group_by(
             ANO = substr(LANCAMENTO, 1, 4), 
             SIGLA_UNIDADE_GESTORA, 
-            NOME_ELEMENTO_DE_DESPESA) %>%
+            NOME_ELEMENTO_DE_DESPESA = str_to_title(NOME_ELEMENTO_DE_DESPESA)) %>%
           summarise(
             SERIE1 = sum(EMPENHADO, na.rm = TRUE),
             SERIE2 = sum(LIQUIDADO, na.rm = TRUE),
