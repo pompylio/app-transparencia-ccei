@@ -30,7 +30,7 @@ O painel foi desenvolvido em R (R version 3.4.4 (2018-03-15)) no RStudio Server 
 | lubridate          | 1.7.4   | methods, R (&gt;= 3.0.0) |
 | packrat            | 0.4.9-2 | R (&gt;= 3.0.0)          |
 | reshape2           | 1.4.3   | R (&gt;= 3.1)            |
-| shiny              | 1.0.5   | R (&gt;= 3.0.2), methods |
+| shiny              | 1.3.0   | R (&gt;= 3.0.2), methods |
 | shinycssloaders    | 0.2.0   | NA                       |
 | shinydashboard     | 0.7.1   | R (&gt;= 3.0)            |
 | shinydashboardPlus | 0.6.0   | NA                       |
@@ -63,29 +63,29 @@ O módulo orçamento contempla a execução da despesa orçamentária nas fases 
 
 Demonstra a evolução ano a ano e mês a mês (acumulado e não acumulado) da execução da despesa, contemplando o empenho, a liquidação, o pagamento e restos a pagar (RAP). Contém também a evolução do comparativo das despesas do exercício corrente pagas neste exercício com as despesas pagas neste exercício que se referem a despesas de exercícios anteriores.
 
-![Execução da despesa da UG por ano e valores pagos por ano de referência](img/1%20Execucao%20por%20ano%202%20Valores%20pagos%20por%20ano%20de%20referencia.PNG)
+![Execução da despesa da UG por ano e valores pagos por ano de referência](img/img01.PNG)
 
-![Execução da despesa por mês (acumulado)](img/3%20Execucao%20da%20despesa%20por%20mes%20acumulado.PNG)
+![Execução da despesa por mês (acumulado)](img/img02.PNG)
 
-![Execução da despesa por mês (não acumulado)](img/4%20Execucao%20da%20despesa%20por%20mes%20nao%20acumulado.PNG)
+![Execução da despesa por mês (não acumulado)](img/img03.PNG)
 
 ##### Categoria
 
 Demonstra a execução da despesa do mês atual por programa, por grupo de despesa, por ação orçamentária e por elemento, maior nível de detalhamento da extração disponibilizada no portal da transparência. Este submódulo dispõe de informações sobre a destinação do gasto.
 
-![Execução da despesa por programa e grupo de despesa](img/5%20Execucao%20por%20programa%206%20Execucao%20por%20grupo%20de%20despesa.PNG)
+![Execução da despesa por programa e grupo de despesa](img/img04.PNG)
 
-![Execução da despesa por ação orçamentária](img/7%20Execucao%20por%20acao%20orcamentaria.PNG)
+![Execução da despesa por ação orçamentária](img/img05.PNG)
 
-![Execução da despesa por elemento de despesa](img/8%20Execucao%20por%20elemento%20de%20despesa.PNG)
+![Execução da despesa por elemento de despesa](img/img06.PNG)
 
 ##### Comparativo
 
 Demonstra o comparativo da execução da despesa por unidade gestora e por campi vs reitoria, tanto em relação a empenhado, liquidado, pago e RAP, quanto em relação a despesas de exercícios anteriores pagas no exercício com despesas do exercício pagas no exercício.
 
-![Execução da despesa por unidade orçamentária e por Campi vs Reitoria](img/9%20Execucao%20por%20UG%2010%20Execucao%20por%20campi%20e%20reitoria.PNG)
+![Execução da despesa por unidade orçamentária e por Campi vs Reitoria](img/img07.PNG)
 
-![Valores pagos por exercício de referência](img/11%20Valores%20pagos%20por%20exercicio%20de%20referencia%20e%20UG%2012%20Valores%20pagos%20por%20exercicio%20de%20referencia%20e%20campi%20reitoria.PNG)
+![Valores pagos por exercício de referência](img/img08.PNG)
 
 #### Módulo Pessoal
 
@@ -95,43 +95,43 @@ O módulo 'Pessoal' apresenta a estrutura de pessoal do campus em número de ser
 
 Demonstra a evolução do número e do percentual de servidores técnicos e docentes ano a ano e mês a mês.
 
-![Número e percentual de técnicos e docentes por ano](img/PES01%20Numero%20de%20tecnicos%20e%20docentes%20PES02%20Percentual%20de%20tecnicos%20e%20docentes.PNG)
+![Número e percentual de técnicos e docentes por ano](img/img09.PNG)
 
-![Número de técnicos e docentes por mês](img/PES03%20Numero%20de%20tecnicos%20e%20docentes%20por%20mes.PNG)
+![Número de técnicos e docentes por mês](img/img10.PNG)
 
-![Percentual de técnicos e docentes por mês](img/PES04%20Percentual%20de%20tecnicos%20e%20docentes%20por%20mes.PNG)
+![Percentual de técnicos e docentes por mês](img/img11.PNG)
 
 ##### Distribuição
 
 Demonstra a distribuição de servidores por cargo, por situação do vínculo e por unidade de exercício, relativo ao último mês de referência disponibilizado pelo portal da transparência.
 
-![Servidores por cargo e por vínculo](img/PES05%20Servidores%20por%20cargo%20PES06%20Servidores%20por%20vinculo.PNG)
+![Servidores por cargo e por vínculo](img/img12.PNG)
 
-![Servidores por unidade de exercício](img/PES07%20Servidores%20por%20unidade.PNG)
+![Servidores por unidade de exercício](img/img13.PNG)
 
 ##### Perfil (Docente)
 
 Demonstra o perfil do corpo docente em relação a classe, padrão e jornada de trabalho. Considera apenas cargos efetivos.
 
-![Docentes por classe e Docentes por jornada de trabalho](img/PES08%20Cargos%20por%20classe%20PES09%20Cargos%20por%20jornada%20docente.PNG)
+![Docentes por classe e Docentes por jornada de trabalho](img/img14.PNG)
 
-![Docentes por classe e padrão](img/PES10%20Cargos%20por%20classe%20e%20padrao%20docentes.PNG)
+![Docentes por classe e padrão](img/img15.PNG)
 
 ##### Perfil (Técnico)
 
 Demonstra o perfil do corpo técnico em relação a classe, padrão, nível de capacitação e jornada de trabalho. Considera apenas cargos efetivos.
 
-![Técnicos por classe e Técnicos por jornada de trabalho](img/PES11%20Cargos%20por%20classe%20PES12%20Cargos%20por%20jornada%20tecnico.PNG)
+![Técnicos por classe e Técnicos por jornada de trabalho](img/img16.PNG)
 
-![Técnicos por classe, padrão e nível de capacitação](img/PES13%20Cargos%20por%20classe,%20padrao%20e%20nivel%20de%20capacitacao.PNG)
+![Técnicos por classe, padrão e nível de capacitação](img/img17.PNG)
 
 ##### Rotatividade
 
 Demonstra a evolução da relação de admissões e desligamentos por unidade, ano e tipo de cargo. Considera cargos efetivos para docentes e técnicos e temporários para professores temporários e substitutos.
 
-![Admissões e desligamentos de docentes e técnicos por ano e tipo de cargo](img/PES14%20Admissoes%20e%20desligamentos%20por%20ano%20PES15%20por%20tipo%20de%20cargo.PNG)
+![Admissões e desligamentos de docentes e técnicos por ano e tipo de cargo](img/img18.PNG)
 
-![Admissões e desligamentos de prof temporarios e substitutos por ano](img/PES16%20Admissoes%20e%20desligamentos%20temporario%20por%20ano%20PES17%20por%20tipo%20de%20contrato.PNG)
+![Admissões e desligamentos de prof temporarios e substitutos por ano](img/img19.PNG)
 
 #### Módulo Avaliação
 
