@@ -63,29 +63,29 @@ O módulo orçamento contempla a execução da despesa orçamentária nas fases 
 
 Demonstra a evolução ano a ano e mês a mês (acumulado e não acumulado) da execução da despesa, contemplando o empenho, a liquidação, o pagamento e restos a pagar (RAP). Contém também a evolução do comparativo das despesas do exercício corrente pagas neste exercício com as despesas pagas neste exercício que se referem a despesas de exercícios anteriores.
 
-![Execução da despesa da UG por ano e valores pagos por ano de referência](/srv/shiny-server/portransp-panel/img/img01.PNG)
+![Execução da despesa da UG por ano e valores pagos por ano de referência](img/img01.PNG)
 
-![Execução da despesa por mês (acumulado)](/srv/shiny-server/portransp-panel/img/img02.PNG)
+![Execução da despesa por mês (acumulado)](img/img02.PNG)
 
-![Execução da despesa por mês (não acumulado)](/srv/shiny-server/portransp-panel/img/img03.PNG)
+![Execução da despesa por mês (não acumulado)](img/img03.PNG)
 
 ##### Categoria
 
 Demonstra a execução da despesa do mês atual por programa, por grupo de despesa, por ação orçamentária e por elemento, maior nível de detalhamento da extração disponibilizada no portal da transparência. Este submódulo dispõe de informações sobre a destinação do gasto.
 
-![Execução da despesa por programa e grupo de despesa](/srv/shiny-server/portransp-panel/img/img04.PNG)
+![Execução da despesa por programa e grupo de despesa](img/img04.PNG)
 
-![Execução da despesa por ação orçamentária](/srv/shiny-server/portransp-panel/img/img05.PNG)
+![Execução da despesa por ação orçamentária](img/img05.PNG)
 
-![Execução da despesa por elemento de despesa](/srv/shiny-server/portransp-panel/img/img06.PNG)
+![Execução da despesa por elemento de despesa](img/img06.PNG)
 
 ##### Comparativo
 
 Demonstra o comparativo da execução da despesa por unidade gestora e por campi vs reitoria, tanto em relação a empenhado, liquidado, pago e RAP, quanto em relação a despesas de exercícios anteriores pagas no exercício com despesas do exercício pagas no exercício.
 
-![Execução da despesa por unidade orçamentária e por Campi vs Reitoria](/srv/shiny-server/portransp-panel/img/img07.PNG)
+![Execução da despesa por unidade orçamentária e por Campi vs Reitoria](img/img07.PNG)
 
-![Valores pagos por exercício de referência](/srv/shiny-server/portransp-panel/img/img08.PNG)
+![Valores pagos por exercício de referência](img/img08.PNG)
 
 #### Módulo Pessoal
 
@@ -95,43 +95,43 @@ O módulo 'Pessoal' apresenta a estrutura de pessoal do campus em número de ser
 
 Demonstra a evolução do número e do percentual de servidores técnicos e docentes ano a ano e mês a mês.
 
-![Número e percentual de técnicos e docentes por ano](/srv/shiny-server/portransp-panel/img/img09.PNG)
+![Número e percentual de técnicos e docentes por ano](img/img09.PNG)
 
-![Número de técnicos e docentes por mês](/srv/shiny-server/portransp-panel/img/img10.PNG)
+![Número de técnicos e docentes por mês](img/img10.PNG)
 
-![Percentual de técnicos e docentes por mês](/srv/shiny-server/portransp-panel/img/img11.PNG)
+![Percentual de técnicos e docentes por mês](img/img11.PNG)
 
 ##### Distribuição
 
 Demonstra a distribuição de servidores por cargo, por situação do vínculo e por unidade de exercício, relativo ao último mês de referência disponibilizado pelo portal da transparência.
 
-![Servidores por cargo e por vínculo](/srv/shiny-server/portransp-panel/img/img12.PNG)
+![Servidores por cargo e por vínculo](img/img12.PNG)
 
-![Servidores por unidade de exercício](/srv/shiny-server/portransp-panel/img/img13.PNG)
+![Servidores por unidade de exercício](img/img13.PNG)
 
 ##### Perfil (Docente)
 
 Demonstra o perfil do corpo docente em relação a classe, padrão e jornada de trabalho. Considera apenas cargos efetivos.
 
-![Docentes por classe e Docentes por jornada de trabalho](/srv/shiny-server/portransp-panel/img/img14.PNG)
+![Docentes por classe e Docentes por jornada de trabalho](img/img14.PNG)
 
-![Docentes por classe e padrão](/srv/shiny-server/portransp-panel/img/img15.PNG)
+![Docentes por classe e padrão](img/img15.PNG)
 
 ##### Perfil (Técnico)
 
 Demonstra o perfil do corpo técnico em relação a classe, padrão, nível de capacitação e jornada de trabalho. Considera apenas cargos efetivos.
 
-![Técnicos por classe e Técnicos por jornada de trabalho](/srv/shiny-server/portransp-panel/img/img16.PNG)
+![Técnicos por classe e Técnicos por jornada de trabalho](img/img16.PNG)
 
-![Técnicos por classe, padrão e nível de capacitação](/srv/shiny-server/portransp-panel/img/img17.PNG)
+![Técnicos por classe, padrão e nível de capacitação](img/img17.PNG)
 
 ##### Rotatividade
 
 Demonstra a evolução da relação de admissões e desligamentos por unidade, ano e tipo de cargo. Considera cargos efetivos para docentes e técnicos e temporários para professores temporários e substitutos.
 
-![Admissões e desligamentos de docentes e técnicos por ano e tipo de cargo](/srv/shiny-server/portransp-panel/img/img18.PNG)
+![Admissões e desligamentos de docentes e técnicos por ano e tipo de cargo](img/img18.PNG)
 
-![Admissões e desligamentos de prof temporarios e substitutos por ano](/srv/shiny-server/portransp-panel/img/img19.PNG)
+![Admissões e desligamentos de prof temporarios e substitutos por ano](img/img19.PNG)
 
 #### Módulo Avaliação
 
