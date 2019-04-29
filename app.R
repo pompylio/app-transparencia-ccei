@@ -385,7 +385,7 @@ ui <-
           inputId = "geral_unidade", 
           label = "Unidade", 
           choices = filter_app$unidades,
-          selected = filter_app$unidades[1]),
+          selected = "CCEI"),
         selectInput(
           inputId = "geral_exercicio",
           label = "Exercício", 
