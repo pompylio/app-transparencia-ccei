@@ -131,7 +131,7 @@ ui <-
               menu_selected = c("typeplot", "groupplot", "dimension"),
               label = c(typeplot = "empty", groupplot = "empty", dimension = "3D"),
               choices = list(typeplot = "empty", groupplot = "empty"),
-              selected = c(typeplot = "areaspline", groupplot = "empty", dimension = "empty")))),
+              selected = c(typeplot = "spline", groupplot = "empty", dimension = "empty")))),
         tabItem(
           tabName = "categoria", 
           fluidRow(
