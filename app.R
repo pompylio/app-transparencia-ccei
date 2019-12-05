@@ -480,20 +480,20 @@ ui <-
 # SHINY SERVER ----------------------------------------------------------------------------------------------------
 server <-
   function(session, input, output) {
-    db_exefav <- reactive({
-      db_doc_fav %>% 
-        filter(SIGLA_UNIDADE_GESTORA == input$geral_unidade,
-               substr(DATA_EMISSAO, 1, 4) == input$geral_exercicio)
-    })
-    observeEvent(db_exefav(), {
-      fav <- unique(db_exefav()$FAVORECIDO_CORRIGIDO)
-      fav <- fav[order(fav)]
-      updateSelectInput(
-        session = session,
-        inputId = "destinatario", 
-        choices = fav,
-        selected = fav[1])
-    })
+    # db_exefav <- reactive({
+    #   db_doc_fav %>% 
+    #     filter(SIGLA_UNIDADE_GESTORA == input$geral_unidade,
+    #            substr(DATA_EMISSAO, 1, 4) == input$geral_exercicio)
+    # })
+    # observeEvent(db_exefav(), {
+    #   fav <- unique(db_exefav()$FAVORECIDO_CORRIGIDO)
+    #   fav <- fav[order(fav)]
+    #   updateSelectInput(
+    #     session = session,
+    #     inputId = "destinatario", 
+    #     choices = fav,
+    #     selected = fav[1])
+    # })
     observeEvent(input$geral_unidade, {
       if(input$geral_unidade == "CCEI"){
         output$item_avaliacao <- renderUI({
@@ -1098,82 +1098,82 @@ server <-
           href = "http://portaltransparencia.gov.br/download-de-dados")
     })
     # ORC15  ----
-    dbpORC15 <- reactive({
-      db <- db_exefav() %>% 
-        filter(
-          substr(DATA_EMISSAO, 1, 4) == input$geral_exercicio,
-          FAVORECIDO_CORRIGIDO == input$destinatario) %>% 
-        group_by(
-          ANOMES = substr(DATA_EMISSAO, 1, 7),
-          CATEGORIA) %>% 
-        summarise(
-          VALOR = sum(VALOR, na.rm = TRUE)) 
-      cat <- unique(db$CATEGORIA)
-      db <- db %>% 
-        spread(
-          key = CATEGORIA, 
-          value = VALOR, 
-          fill = 0)
-      if(input$acumulado){
-        for(i in 1:length(cat)){
-          db[, cat[i]] <- cumsum(db[, cat[i]])
-        }
-      }
-      db
-    })
-    output$plotORC15 <- renderHighchart({
-      db <- dbpORC15()
-      nm <- colnames(db[,c(2:ncol(db))])
-      names(nm) <- paste0("SERIE", seq(from = 1, to = length(nm)))
-      colnames(db) <- c("ANOMES", names(nm))
-      highchart_new(
-        data = db,
-        series = nm,
-        subtitle = "",
-        categories = unique(db$ANOMES),
-        credits = "Portal da Transparência",
-        input_plot = c(
-          typeplot = input$typeplotORC15, 
-          dimension = input$dimensionORC15, 
-          groupplot = input$groupplotORC15),
-        origin = "orcamento",
-        colors = paste(hccolor$exeorc))
-    })
-    # ORC16  ----
-    dbpORC16 <- reactive({
-      db <- db_exefav() %>% 
-        filter(
-          substr(DATA_EMISSAO, 1, 4) == input$geral_exercicio,
-          FAVORECIDO_CORRIGIDO == input$destinatario) %>% 
-        group_by(
-          DATA_EMISSAO,
-          CATEGORIA) %>% 
-        summarise(
-          VALOR = sum(VALOR, na.rm = TRUE)) %>% 
-        spread(
-          key = CATEGORIA, 
-          value = VALOR, 
-          fill = 0)
-      db
-    })
-    output$plotORC16 <- renderHighchart({
-      db <- dbpORC16()
-      nm <- colnames(db[,c(2:ncol(db))])
-      names(nm) <- paste0("SERIE", seq(from = 1, to = length(nm)))
-      colnames(db) <- c("DATA_EMISSAO", names(nm))
-      highchart_new(
-        data = db,
-        series = nm,
-        subtitle = "",
-        categories = db$DATA_EMISSAO,
-        credits = "Portal da Transparência",
-        input_plot = c(
-          typeplot = input$typeplotORC16, 
-          dimension = input$dimensionORC16, 
-          groupplot = input$groupplotORC16),
-        origin = "orcamento",
-        colors = paste(hccolor$exeorc))
-    })
+    # dbpORC15 <- reactive({
+    #   db <- db_exefav() %>% 
+    #     filter(
+    #       substr(DATA_EMISSAO, 1, 4) == input$geral_exercicio,
+    #       FAVORECIDO_CORRIGIDO == input$destinatario) %>% 
+    #     group_by(
+    #       ANOMES = substr(DATA_EMISSAO, 1, 7),
+    #       CATEGORIA) %>% 
+    #     summarise(
+    #       VALOR = sum(VALOR, na.rm = TRUE)) 
+    #   cat <- unique(db$CATEGORIA)
+    #   db <- db %>% 
+    #     spread(
+    #       key = CATEGORIA, 
+    #       value = VALOR, 
+    #       fill = 0)
+    #   if(input$acumulado){
+    #     for(i in 1:length(cat)){
+    #       db[, cat[i]] <- cumsum(db[, cat[i]])
+    #     }
+    #   }
+    #   db
+    # })
+    # output$plotORC15 <- renderHighchart({
+    #   db <- dbpORC15()
+    #   nm <- colnames(db[,c(2:ncol(db))])
+    #   names(nm) <- paste0("SERIE", seq(from = 1, to = length(nm)))
+    #   colnames(db) <- c("ANOMES", names(nm))
+    #   highchart_new(
+    #     data = db,
+    #     series = nm,
+    #     subtitle = "",
+    #     categories = unique(db$ANOMES),
+    #     credits = "Portal da Transparência",
+    #     input_plot = c(
+    #       typeplot = input$typeplotORC15, 
+    #       dimension = input$dimensionORC15, 
+    #       groupplot = input$groupplotORC15),
+    #     origin = "orcamento",
+    #     colors = paste(hccolor$exeorc))
+    # })
+    # # ORC16  ----
+    # dbpORC16 <- reactive({
+    #   db <- db_exefav() %>% 
+    #     filter(
+    #       substr(DATA_EMISSAO, 1, 4) == input$geral_exercicio,
+    #       FAVORECIDO_CORRIGIDO == input$destinatario) %>% 
+    #     group_by(
+    #       DATA_EMISSAO,
+    #       CATEGORIA) %>% 
+    #     summarise(
+    #       VALOR = sum(VALOR, na.rm = TRUE)) %>% 
+    #     spread(
+    #       key = CATEGORIA, 
+    #       value = VALOR, 
+    #       fill = 0)
+    #   db
+    # })
+    # output$plotORC16 <- renderHighchart({
+    #   db <- dbpORC16()
+    #   nm <- colnames(db[,c(2:ncol(db))])
+    #   names(nm) <- paste0("SERIE", seq(from = 1, to = length(nm)))
+    #   colnames(db) <- c("DATA_EMISSAO", names(nm))
+    #   highchart_new(
+    #     data = db,
+    #     series = nm,
+    #     subtitle = "",
+    #     categories = db$DATA_EMISSAO,
+    #     credits = "Portal da Transparência",
+    #     input_plot = c(
+    #       typeplot = input$typeplotORC16, 
+    #       dimension = input$dimensionORC16, 
+    #       groupplot = input$groupplotORC16),
+    #     origin = "orcamento",
+    #     colors = paste(hccolor$exeorc))
+    # })
 
 # PESSOAL -----------------------------------------------------------------
     spquadro <- reactive({
