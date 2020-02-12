@@ -444,7 +444,7 @@ ui <-
           inputId = "geral_exercicio",
           label = "Exercício", 
           choices = as.character(sort(seq(from = 2013, to = year(Sys.Date()), by = 1), decreasing = TRUE)), 
-          selected = "2019"),
+          selected = "2020"),
         checkboxGroupInput(
           inputId = "grupodespesa",
           label = "Grupo de despesa",

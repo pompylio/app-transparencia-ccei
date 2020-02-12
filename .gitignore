@@ -8,4 +8,5 @@ README.Rmd
 data/
 modules/
 security/
-packrat/lib*/
+packrat/
+.RData
