@@ -121,7 +121,7 @@ ui <-
               selected = c(typeplot = "column", groupplot = "percent", dimension = "empty")),
             boxnew(
               inputId = "ORC03", # ORC03 Execução da despesa por mês (acumulado) -----
-              width_box = 12,
+              width_box = 6,
               status = "warning",
               boxtitle = "Execução da despesa por mês (acumulado)",
               menu_selected = c("typeplot", "groupplot", "dimension"),
@@ -130,7 +130,7 @@ ui <-
               selected = c(typeplot = "areaspline", groupplot = "empty", dimension = "empty")),
             boxnew(
               inputId = "ORC04", # ORC04 Execução da despesa por mês (não acumulado) ----
-              width_box = 12,
+              width_box = 6,
               status = "warning",
               boxtitle = "Execução da despesa por mês (não acumulado)",
               menu_selected = c("typeplot", "groupplot", "dimension"),
