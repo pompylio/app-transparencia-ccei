@@ -9,3 +9,4 @@ data/
 modules/
 security/
 packrat/
+.RData
